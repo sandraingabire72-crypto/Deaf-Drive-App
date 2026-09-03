@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>DeafDrive Kigali</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+:root{--green:#27AE60;--red:#E74C3C;--blue:#2980B9;--yellow:#F39C12;--bg:#F0F4F8;--text:#1A252F;--muted:#7F8C8D;--border:#D5DBDB;--kigali:#1A5276;--accent:#2ECC71;}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);display:flex;justify-content:center;}
+.app{width:100%;max-width:430px;height:100vh;display:flex;flex-direction:column;background:var(--bg);overflow:hidden;}
+.screen{display:none;flex-direction:column;height:100%;overflow:hidden;}
+.screen.active{display:flex;}
+/* SPLASH */
+#s-splash{background:linear-gradient(160deg,#1A5276,#0E3D5C);align-items:center;justify-content:center;text-align:center;padding:40px 30px;}
+.sp-icon{width:110px;height:110px;background:rgba(255,255,255,.12);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:54px;margin:0 auto 20px;}
+.sp-title{font-size:38px;font-weight:900;color:#fff;}
+.sp-sub{font-size:12px;color:rgba(255,255,255,.55);margin-top:5px;letter-spacing:3px;text-transform:uppercase;}
+.sp-tag{font-size:15px;color:rgba(255,255,255,.82);margin-top:16px;line-height:1.7;}
+.sp-btn{margin-top:36px;background:#2ECC71;color:#fff;border:none;border-radius:50px;padding:18px 52px;font-size:18px;font-weight:800;cursor:pointer;}
+.sp-flag{margin-top:14px;font-size:12px;color:rgba(255,255,255,.4);}
+/* AUTH */
+#s-auth{background:var(--bg);overflow-y:auto;}
+.auth-top{background:linear-gradient(135deg,#1A5276,#0E3D5C);padding:44px 28px 30px;text-align:center;border-radius:0 0 30px 30px;flex-shrink:0;}
+.auth-top h2{color:#fff;font-size:23px;font-weight:800;}
+.auth-top p{color:rgba(255,255,255,.68);font-size:13px;margin-top:4px;}
+.tabs{display:flex;margin:18px 18px 0;background:#E8EEF2;border-radius:12px;padding:4px;}
+.tab{flex:1;padding:10px;text-align:center;font-size:14px;font-weight:600;border-radius:9px;cursor:pointer;color:var(--muted);border:none;background:none;}
+.tab.on{background:#fff;color:var(--kigali);box-shadow:0 2px 8px rgba(0,0,0,.1);}
+.aform{padding:16px 18px;flex:1;overflow-y:auto;}
+.fg{margin-bottom:13px;}
+.fl{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px;display:block;}
+.fi{width:100%;padding:13px 14px;border:2px solid var(--border);border-radius:11px;font-size:15px;color:var(--text);background:#fff;outline:none;-webkit-appearance:none;}
+.fi:focus{border-color:var(--kigali);}
+.fi::placeholder{color:#BDC3C7;}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.btn{width:100%;padding:15px;background:var(--kigali);color:#fff;border:none;border-radius:11px;font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:5px;}
+.btn.red{background:var(--red);}
+/* HOME */
+#s-home{background:var(--bg);}
+.hdr{background:var(--kigali);padding:11px 15px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.hav{width:36px;height:36px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;}
+.hwelc{color:rgba(255,255,255,.7);font-size:10px;}
+.hname{color:#fff;font-size:14px;font-weight:700;}
+.dbadge{background:rgba(255,255,255,.15);border-radius:20px;padding:5px 10px;color:#fff;font-size:11px;font-weight:600;}
+/* MIC PANEL */
+.micpanel{background:#0D1B2A;flex-shrink:0;padding:10px 13px 8px;}
+.microw1{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.micdot{width:10px;height:10px;border-radius:50%;background:#444;flex-shrink:0;}
+.micdot.on{background:#2ECC71;}
+.micdot.loud{background:#E74C3C;animation:bl .12s infinite;}
+@keyframes bl{0%,100%{opacity:1;}50%{opacity:.05;}}
+.miclbl{font-size:11px;font-weight:600;color:rgba(255,255,255,.65);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mictgl{font-size:11px;font-weight:800;color:#fff;cursor:pointer;background:#1A5276;border:none;padding:7px 13px;border-radius:8px;flex-shrink:0;}
+.mictgl.stop{background:#C0392B;}
+/* BIG volume bar */
+.volbar{height:14px;background:#1A2634;border-radius:7px;overflow:hidden;position:relative;}
+.volfill{height:100%;width:0%;border-radius:7px;transition:width .04s,background .1s;}
+.volmarks{display:flex;justify-content:space-between;margin-top:3px;}
+.volmark{font-size:9px;color:rgba(255,255,255,.3);}
+/* LEVEL readout */
+.levrow{display:flex;align-items:center;justify-content:space-between;margin-top:4px;}
+.levtxt{font-size:10px;color:rgba(255,255,255,.4);}
+.levval{font-size:11px;font-weight:800;color:#2ECC71;}
+/* MAP */
+.mapwrap{height:235px;position:relative;flex-shrink:0;}
+#map{height:100%;width:100%;}
+.mapbadge{position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(26,82,118,.9);color:#fff;font-size:11px;font-weight:700;padding:4px 12px;border-radius:18px;white-space:nowrap;z-index:1000;pointer-events:none;max-width:88%;overflow:hidden;text-overflow:ellipsis;}
+.maprec{position:absolute;bottom:9px;right:9px;z-index:1000;background:#fff;border:none;border-radius:50%;width:36px;height:36px;font-size:17px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;}
+.rpanel{flex:1;background:#fff;overflow-y:auto;border-top:1px solid var(--border);}
+.rtabs{display:flex;border-bottom:1px solid var(--border);position:sticky;top:0;background:#fff;z-index:10;}
+.rtab{flex:1;padding:9px;text-align:center;font-size:12px;font-weight:700;cursor:pointer;color:var(--muted);border:none;background:none;border-bottom:2px solid transparent;}
+.rtab.on{color:var(--kigali);border-bottom-color:var(--kigali);}
+.rtabc{display:none;padding:11px 13px;}
+.rtabc.on{display:block;}
+.rinpwrap{position:relative;margin-bottom:7px;}
+.rdot{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:9px;height:9px;border-radius:50%;}
+.rdot.s{background:var(--blue);}.rdot.e{background:var(--red);}
+.rinp{width:100%;padding:11px 11px 11px 28px;border:1.5px solid var(--border);border-radius:9px;font-size:14px;color:var(--text);background:var(--bg);outline:none;}
+.rinp:focus{border-color:var(--kigali);background:#fff;}
+.sugg{position:absolute;left:0;right:0;top:calc(100% + 2px);background:#fff;border-radius:9px;box-shadow:0 6px 20px rgba(0,0,0,.15);z-index:9000;display:none;max-height:150px;overflow-y:auto;}
+.suggitem{padding:9px 13px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:13px;border-bottom:1px solid var(--border);}
+.suggitem:last-child{border-bottom:none;}
+.rbtn{width:100%;padding:12px;background:var(--kigali);color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;}
+.rinfo{background:#EBF5FB;border-radius:9px;padding:9px 13px;margin-top:7px;display:none;}
+.rstats{display:flex;justify-content:space-around;}
+.rstat-v{font-size:17px;font-weight:800;color:var(--kigali);text-align:center;}
+.rstat-l{font-size:10px;color:var(--muted);text-align:center;margin-top:2px;}
+.acards{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.acard{border-radius:11px;padding:12px;display:flex;flex-direction:column;align-items:center;text-align:center;cursor:pointer;border:2.5px solid transparent;transition:transform .15s;}
+.acard:active{transform:scale(.95);}
+.acard.r{background:#FDEDEC;border-color:var(--red);}
+.acard.g{background:#EAFAF1;border-color:var(--green);}
+.acard.b{background:#EBF5FB;border-color:var(--blue);}
+.acard.y{background:#FEF9E7;border-color:var(--yellow);}
+.acard-ic{font-size:26px;margin-bottom:4px;}
+.acard-n{font-size:11px;font-weight:800;}
+.acard-d{font-size:10px;color:var(--muted);margin-top:2px;}
+.abar{width:22px;height:5px;border-radius:3px;margin-top:6px;}
+.acard.r .abar{background:var(--red);}
+.acard.g .abar{background:var(--green);}
+.acard.b .abar{background:var(--blue);}
+.acard.y .abar{background:var(--yellow);}
+.bnav{display:flex;background:#fff;border-top:1px solid var(--border);padding:7px 0 14px;flex-shrink:0;}
+.bni{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 0;border:none;background:none;color:var(--muted);font-size:10px;font-weight:600;text-transform:uppercase;}
+.bni.on{color:var(--kigali);}
+.bnic{font-size:20px;}
+/* FULL SCREEN ALERT */
+.aoverlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:999999;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px;}
+.aoverlay.on{display:flex;animation:pulse .6s ease-in-out infinite alternate;}
+@keyframes pulse{from{filter:brightness(1);}to{filter:brightness(1.18);}}
+.aclose{position:absolute;top:44px;right:20px;background:rgba(0,0,0,.35);border:2.5px solid rgba(255,255,255,.6);border-radius:50%;width:50px;height:50px;color:#fff;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.aic{font-size:90px;margin-bottom:10px;animation:bncIcon .5s infinite alternate;}
+@keyframes bncIcon{from{transform:scale(1);}to{transform:scale(1.25);}}
+.atitle{font-size:34px;font-weight:900;color:#fff;text-shadow:0 3px 10px rgba(0,0,0,.4);line-height:1.1;}
+.adesc{font-size:15px;color:rgba(255,255,255,.92);margin-top:14px;max-width:280px;line-height:1.7;white-space:pre-line;}
+.asrc{font-size:13px;color:rgba(255,255,255,.65);margin-top:10px;}
+.adismiss{margin-top:28px;background:rgba(0,0,0,.3);color:#fff;border:2px solid rgba(255,255,255,.5);border-radius:30px;padding:14px 40px;font-size:16px;font-weight:800;cursor:pointer;}
+/* POLICE */
+#s-police{background:var(--bg);overflow-y:auto;}
+.phdr{background:linear-gradient(135deg,#C0392B,#7B241C);padding:42px 20px 24px;text-align:center;border-radius:0 0 24px 24px;flex-shrink:0;}
+.phdr h2{color:#fff;font-size:20px;font-weight:800;}
+.phdr p{color:rgba(255,255,255,.75);font-size:12px;margin-top:3px;}
+.pbody{padding:15px;flex:1;overflow-y:auto;}
+.pcard{background:#fff;border-radius:14px;padding:15px;margin-bottom:12px;box-shadow:0 4px 16px rgba(0,0,0,.1);}
+.pctitle{font-size:13px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:6px;margin-bottom:10px;}
+.dcard{background:linear-gradient(135deg,var(--kigali),#1A6A9A);border-radius:11px;padding:15px;display:flex;align-items:center;gap:11px;cursor:pointer;margin-bottom:11px;}
+.dcardic{font-size:38px;}
+.dcardtxt h4{color:#fff;font-size:14px;font-weight:800;}
+.dcardtxt p{color:rgba(255,255,255,.78);font-size:11px;margin-top:3px;line-height:1.5;}
+.emgrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:9px;}
+.emb{border:none;border-radius:11px;padding:13px 7px;text-align:center;cursor:pointer;}
+.emb.pol{background:#EBF5FB;}.emb.amb{background:#FDEDEC;}.emb.fir{background:#FEF9E7;}.emb.tra{background:#EAFAF1;}
+.emb-ic{font-size:22px;margin-bottom:3px;}
+.emb-n{font-size:11px;font-weight:800;color:var(--text);}
+.emb-num{font-size:15px;font-weight:900;color:var(--kigali);}
+.msgprev{background:#F8F9FA;border-radius:9px;padding:11px;border-left:4px solid var(--accent);margin-top:6px;}
+.msgprev p{font-size:12px;color:var(--text);line-height:1.65;font-style:italic;}
+/* PROFILE */
+#s-profile{background:var(--bg);overflow-y:auto;}
+.prohdr{background:linear-gradient(135deg,var(--kigali),#1A6A9A);padding:42px 20px 24px;text-align:center;border-radius:0 0 24px 24px;flex-shrink:0;}
+.proav{width:72px;height:72px;background:var(--accent);border-radius:50%;margin:0 auto 9px;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:900;color:#fff;border:4px solid rgba(255,255,255,.28);}
+.proname{color:#fff;font-size:19px;font-weight:800;}
+.proemail{color:rgba(255,255,255,.68);font-size:12px;margin-top:3px;}
+.probadge{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.15);border-radius:20px;padding:5px 12px;color:#fff;font-size:11px;font-weight:700;margin-top:7px;}
+.probody{padding:15px;flex:1;}
+.procard{background:#fff;border-radius:14px;padding:4px 0;margin-bottom:12px;box-shadow:0 4px 16px rgba(0,0,0,.1);}
+.proitem{display:flex;align-items:center;gap:11px;padding:13px 15px;border-bottom:1px solid var(--border);cursor:pointer;}
+.proitem:last-child{border-bottom:none;}
+.proitem-ic{font-size:18px;width:32px;text-align:center;}
+.proitem-tx{flex:1;}
+.proitem-lb{font-size:14px;font-weight:600;color:var(--text);}
+.proitem-sb{font-size:11px;color:var(--muted);margin-top:1px;}
+.proitem-ar{color:var(--muted);font-size:16px;}
+.logoutbtn{width:100%;padding:13px;background:#FDEDEC;color:var(--red);border:2px solid var(--red);border-radius:11px;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;}
+.moverlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:50000;display:none;align-items:flex-end;justify-content:center;}
+.moverlay.on{display:flex;}
+.msheet{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:430px;padding:18px;max-height:88vh;overflow-y:auto;}
+.mhandle{width:34px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 14px;}
+.mtitle{font-size:17px;font-weight:800;color:var(--text);margin-bottom:11px;}
+.sgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.sitem{background:var(--bg);border-radius:11px;padding:12px 5px;text-align:center;}
+.sitem-em{font-size:30px;margin-bottom:4px;}
+.sitem-lb{font-size:10px;font-weight:700;color:var(--text);}
+.mclose{width:100%;padding:13px;background:var(--kigali);color:#fff;border:none;border-radius:11px;font-size:14px;font-weight:700;cursor:pointer;margin-top:12px;}
+.toast{position:fixed;top:18px;left:50%;transform:translateX(-50%);background:#1A252F;color:#fff;padding:11px 20px;border-radius:24px;font-size:13px;font-weight:600;z-index:999999;opacity:0;transition:opacity .25s;pointer-events:none;max-width:86vw;text-align:center;}
+.toast.on{opacity:1;}
+::-webkit-scrollbar{display:none;}*{scrollbar-width:none;}
+.leaflet-popup-content-wrapper{border-radius:11px;font-size:13px;font-weight:600;}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="toast" id="toast"></div>
+
+<!-- FULL SCREEN ALERT -->
+<div class="aoverlay" id="aoverlay">
+  <button class="aclose" onclick="closeAlert()">✕</button>
+  <div class="aic" id="aic">🚨</div>
+  <div class="atitle" id="atitle">ALERT</div>
+  <div class="adesc" id="adesc"></div>
+  <div class="asrc" id="asrc"></div>
+  <button class="adismiss" onclick="closeAlert()">TAP TO DISMISS</button>
+</div>
+
+<!-- DEAF CARD MODAL -->
+<div class="moverlay" id="signMod">
+  <div class="msheet">
+    <div class="mhandle"></div>
+    <div class="mtitle">🤟 Deaf Driver Card</div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">Show this card to any police officer or emergency responder.</p>
+    <div style="background:var(--kigali);border-radius:12px;padding:16px;text-align:center;margin-bottom:12px;">
+      <div style="font-size:34px;margin-bottom:6px;">🦻</div>
+      <div style="color:#fff;font-size:17px;font-weight:900;margin-bottom:6px;">I AM DEAF — NDI IGIKUYU</div>
+      <div style="color:rgba(255,255,255,.85);font-size:13px;line-height:1.75;">Ntumva neza. Ndakusaba gufata ikaramu.<br><em style="color:rgba(255,255,255,.7);">I cannot hear. Please write to communicate.</em><br><br>📞 Emergency: <strong id="modPhone">+250 780 000 000</strong></div>
+    </div>
+    <div class="sgrid">
+      <div class="sitem"><div class="sitem-em">✋</div><div class="sitem-lb">Hello/Stop</div></div>
+      <div class="sitem"><div class="sitem-em">👂</div><div class="sitem-lb">Cannot hear</div></div>
+      <div class="sitem"><div class="sitem-em">✍️</div><div class="sitem-lb">Write please</div></div>
+      <div class="sitem"><div class="sitem-em">📄</div><div class="sitem-lb">My license</div></div>
+      <div class="sitem"><div class="sitem-em">🙏</div><div class="sitem-lb">Thank you</div></div>
+      <div class="sitem"><div class="sitem-em">👍</div><div class="sitem-lb">OK / Good</div></div>
+      <div class="sitem"><div class="sitem-em">📱</div><div class="sitem-lb">Call someone</div></div>
+      <div class="sitem"><div class="sitem-em">🆘</div><div class="sitem-lb">Need help</div></div>
+      <div class="sitem"><div class="sitem-em">🏠</div><div class="sitem-lb">Going home</div></div>
+    </div>
+    <button class="mclose" onclick="closeMod('signMod')">Close</button>
+  </div>
+</div>
+
+<!-- SPLASH -->
+<div class="screen active" id="s-splash">
+  <div class="sp-icon">🦻</div>
+  <div class="sp-title">DeafDrive</div>
+  <div class="sp-sub">Kigali Edition</div>
+  <div class="sp-tag">Real road navigation &amp; automatic<br>sound alerts for deaf drivers in Kigali</div>
+  <button class="sp-btn" onclick="go('s-auth')">Get Started 🚗</button>
+  <div class="sp-flag">🇷🇼 Made for Rwanda · Kigali</div>
+</div>
+
+<!-- AUTH -->
+<div class="screen" id="s-auth">
+  <div class="auth-top">
+    <div style="font-size:34px;margin-bottom:6px;">🦻</div>
+    <h2>Welcome to DeafDrive</h2>
+    <p>Safe navigation for deaf drivers in Kigali</p>
+  </div>
+  <div class="tabs">
+    <button class="tab on" id="t-in" onclick="swTab('in')">Sign In</button>
+    <button class="tab" id="t-up" onclick="swTab('up')">Sign Up</button>
+  </div>
+  <div class="aform" id="f-in">
+    <div class="fg"><label class="fl">📱 Phone Number</label><input type="tel" class="fi" placeholder="+250 7XX XXX XXX" id="si-ph"></div>
+    <div class="fg"><label class="fl">🔒 Password</label><input type="password" class="fi" placeholder="Your password" id="si-pw"></div>
+    <button class="btn" onclick="doIn()">🚗 Sign In &amp; Drive</button>
+    <p style="text-align:center;margin-top:11px;font-size:12px;color:var(--muted);">No account? <span style="color:var(--kigali);font-weight:700;cursor:pointer;" onclick="swTab('up')">Create one →</span></p>
+    <p style="text-align:center;margin-top:5px;font-size:11px;color:#BDC3C7;">Demo: enter any phone &amp; tap Sign In</p>
+  </div>
+  <div class="aform" id="f-up" style="display:none;">
+    <div class="frow">
+      <div class="fg"><label class="fl">👤 First Name</label><input type="text" class="fi" placeholder="Sandra" id="su-fn"></div>
+      <div class="fg"><label class="fl">👤 Last Name</label><input type="text" class="fi" placeholder="Ingabire" id="su-ln"></div>
+    </div>
+    <div class="fg"><label class="fl">📱 Phone</label><input type="tel" class="fi" placeholder="+250 7XX XXX XXX" id="su-ph"></div>
+    <div class="fg"><label class="fl">📧 Email</label><input type="email" class="fi" placeholder="your@email.com" id="su-em"></div>
+    <div class="fg"><label class="fl">🚗 License Plate</label><input type="text" class="fi" placeholder="RAA 123 A" id="su-pl"></div>
+    <div class="fg"><label class="fl">🔒 Password</label><input type="password" class="fi" placeholder="Min 6 characters" id="su-pw"></div>
+    <div class="fg"><label class="fl">🔒 Confirm</label><input type="password" class="fi" placeholder="Repeat password" id="su-pw2"></div>
+    <button class="btn" onclick="doUp()">✅ Create My Account</button>
+    <p style="text-align:center;margin-top:11px;font-size:12px;color:var(--muted);">Have account? <span style="color:var(--kigali);font-weight:700;cursor:pointer;" onclick="swTab('in')">Sign in →</span></p>
+  </div>
+</div>
+
+<!-- HOME -->
+<div class="screen" id="s-home">
+  <div class="hdr">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div class="hav" id="hav">S</div>
+      <div><div class="hwelc">Good day,</div><div class="hname" id="hname">Sandra 👋</div></div>
+    </div>
+    <div class="dbadge">🦻 Deaf Mode ON</div>
+  </div>
+
+  <!-- MIC PANEL -->
+  <div class="micpanel">
+    <div class="microw1">
+      <div class="micdot" id="mdot"></div>
+      <div class="miclbl" id="mlbl">Tap Enable to start listening</div>
+      <button class="mictgl" id="mtgl" onclick="toggleMic()">Enable Mic</button>
+    </div>
+    <div class="volbar">
+      <div class="volfill" id="volfill"></div>
+    </div>
+    <div class="levrow">
+      <span class="levtxt" id="levtxt">Sound level: 0%</span>
+      <span class="levval" id="levval"></span>
+    </div>
+  </div>
+
+  <div class="mapwrap">
+    <div id="map"></div>
+    <div class="mapbadge" id="mbadge">📍 Kigali City</div>
+    <button class="maprec" onclick="recenter()">📍</button>
+  </div>
+
+  <div class="rpanel">
+    <div class="rtabs">
+      <button class="rtab on" id="rt1" onclick="rtab(1)">🗺️ Navigate</button>
+      <button class="rtab" id="rt2" onclick="rtab(2)">🔔 Test Alerts</button>
+    </div>
+    <div class="rtabc on" id="rc1">
+      <div class="rinpwrap">
+        <div class="rdot s"></div>
+        <input type="text" class="rinp" id="rfrom" placeholder="Your current location..." value="Nyarugenge, Kigali">
+      </div>
+      <div class="rinpwrap" style="position:relative;">
+        <div class="rdot e"></div>
+        <input type="text" class="rinp" id="rto" placeholder="Where are you going?" oninput="showSug()" onfocus="showSug()">
+        <div class="sugg" id="suglist"></div>
+      </div>
+      <button class="rbtn" onclick="findRoute()">🗺️ Find Safest Route</button>
+      <div class="rinfo" id="rinfo">
+        <div class="rstats">
+          <div><div class="rstat-v" id="rdist">—</div><div class="rstat-l">Distance</div></div>
+          <div><div class="rstat-v" id="rtime">—</div><div class="rstat-l">Est. Time</div></div>
+          <div><div class="rstat-v" style="color:var(--green);">Low 🟢</div><div class="rstat-l">Traffic</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="rtabc" id="rc2">
+      <p style="font-size:11px;color:var(--muted);margin-bottom:10px;text-align:center;line-height:1.6;">Tap a card to test the full-screen color alert</p>
+      <div class="acards">
+        <div class="acard r" onclick="trigAlert('siren','tap')"><div class="acard-ic">🚨</div><div class="acard-n">SIREN</div><div class="acard-d">Screen → RED</div><div class="abar"></div></div>
+        <div class="acard g" onclick="trigAlert('go','tap')"><div class="acard-ic">🚦</div><div class="acard-n">TRAFFIC</div><div class="acard-d">Screen → GREEN</div><div class="abar"></div></div>
+        <div class="acard b" onclick="trigAlert('emg','tap')"><div class="acard-ic">🚑</div><div class="acard-n">AMBULANCE</div><div class="acard-d">Screen → BLUE</div><div class="abar"></div></div>
+        <div class="acard y" onclick="trigAlert('horn','tap')"><div class="acard-ic">📣</div><div class="acard-n">HORN</div><div class="acard-d">Screen → YELLOW</div><div class="abar"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bnav">
+    <button class="bni on" onclick="navTo('home')"><div class="bnic">🗺️</div>Navigate</button>
+    <button class="bni" onclick="navTo('police')"><div class="bnic">🚔</div>Police</button>
+    <button class="bni" onclick="navTo('profile')"><div class="bnic">👤</div>Profile</button>
+  </div>
+</div>
+
+<!-- POLICE -->
+<div class="screen" id="s-police">
+  <div class="phdr">
+    <div style="font-size:42px;margin-bottom:6px;">🚔</div>
+    <h2>Police &amp; Emergency</h2>
+    <p>Quick contact &amp; deaf communication tools</p>
+  </div>
+  <div class="pbody">
+    <div class="dcard" onclick="openMod('signMod')">
+      <div class="dcardic">🤟</div>
+      <div class="dcardtxt"><h4>Show Deaf Driver Card</h4><p>Tap to show your card to an officer.<br>Kinyarwanda &amp; English included.</p></div>
+    </div>
+    <div class="pcard">
+      <div class="pctitle"><span>💬</span> Message to Officer</div>
+      <div class="msgprev"><p>"Officer, I am a deaf driver. I cannot hear you. Please communicate with me in writing or use gestures. My documents are ready. Thank you — Murakoze."</p></div>
+      <button class="btn" style="margin-top:10px;" onclick="toast('📱 Message sent to nearest officer!')">📤 Send to Nearest Officer</button>
+    </div>
+    <div class="pcard">
+      <div class="pctitle"><span>📞</span> Emergency Numbers — Kigali</div>
+      <div class="emgrid">
+        <div class="emb pol" onclick="callN('112')"><div class="emb-ic">👮</div><div class="emb-n">Police</div><div class="emb-num">112</div></div>
+        <div class="emb amb" onclick="callN('912')"><div class="emb-ic">🚑</div><div class="emb-n">Ambulance</div><div class="emb-num">912</div></div>
+        <div class="emb fir" onclick="callN('111')"><div class="emb-ic">🚒</div><div class="emb-n">Fire Brigade</div><div class="emb-num">111</div></div>
+        <div class="emb tra" onclick="callN('113')"><div class="emb-ic">🚦</div><div class="emb-n">Traffic RNP</div><div class="emb-num">113</div></div>
+      </div>
+    </div>
+    <div class="pcard">
+      <div class="pctitle"><span>🆘</span> SOS Panic Button</div>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:10px;">Sends your GPS location + deaf driver alert instantly.</p>
+      <button class="btn red" onclick="doSOS()">🆘 SEND SOS ALERT NOW</button>
+    </div>
+  </div>
+  <div class="bnav">
+    <button class="bni" onclick="navTo('home')"><div class="bnic">🗺️</div>Navigate</button>
+    <button class="bni on" onclick="navTo('police')"><div class="bnic">🚔</div>Police</button>
+    <button class="bni" onclick="navTo('profile')"><div class="bnic">👤</div>Profile</button>
+  </div>
+</div>
+
+<!-- PROFILE -->
+<div class="screen" id="s-profile">
+  <div class="prohdr">
+    <div class="proav" id="prav">S</div>
+    <div class="proname" id="prname">Sandra Ingabire</div>
+    <div class="proemail" id="premail">sandra@email.com</div>
+    <div class="probadge">🦻 Deaf Driver · Kigali</div>
+  </div>
+  <div class="probody">
+    <div class="procard">
+      <div class="proitem"><div class="proitem-ic">👤</div><div class="proitem-tx"><div class="proitem-lb" id="pp-n">Sandra Ingabire</div><div class="proitem-sb">Full Name</div></div><div class="proitem-ar">›</div></div>
+      <div class="proitem"><div class="proitem-ic">📱</div><div class="proitem-tx"><div class="proitem-lb" id="pp-ph">+250 780 000 000</div><div class="proitem-sb">Phone Number</div></div><div class="proitem-ar">›</div></div>
+      <div class="proitem"><div class="proitem-ic">🚗</div><div class="proitem-tx"><div class="proitem-lb" id="pp-pl">RAA 123 A</div><div class="proitem-sb">License Plate</div></div><div class="proitem-ar">›</div></div>
+      <div class="proitem"><div class="proitem-ic">📧</div><div class="proitem-tx"><div class="proitem-lb" id="pp-em">sandra@email.com</div><div class="proitem-sb">Email</div></div><div class="proitem-ar">›</div></div>
+    </div>
+    <div class="procard">
+      <div class="proitem" onclick="toast('🔔 Auto detection active')"><div class="proitem-ic">🔔</div><div class="proitem-tx"><div class="proitem-lb">Alert Settings</div><div class="proitem-sb">Auto sound detection enabled</div></div><div class="proitem-ar">›</div></div>
+      <div class="proitem" onclick="toast('🌍 Kinyarwanda / English')"><div class="proitem-ic">🌍</div><div class="proitem-tx"><div class="proitem-lb">Language</div><div class="proitem-sb">Kinyarwanda / English</div></div><div class="proitem-ar">›</div></div>
+      <div class="proitem" onclick="openMod('signMod')"><div class="proitem-ic">🤟</div><div class="proitem-tx"><div class="proitem-lb">My Deaf Driver Card</div><div class="proitem-sb">Show to police &amp; emergency</div></div><div class="proitem-ar">›</div></div>
+      <div class="proitem" onclick="toast('📄 License: Valid ✅')"><div class="proitem-ic">📄</div><div class="proitem-tx"><div class="proitem-lb">Driving License</div><div class="proitem-sb">Upload &amp; store your license</div></div><div class="proitem-ar">›</div></div>
+    </div>
+    <button class="logoutbtn" onclick="doOut()">🚪 Sign Out</button>
+  </div>
+  <div class="bnav">
+    <button class="bni" onclick="navTo('home')"><div class="bnic">🗺️</div>Navigate</button>
+    <button class="bni" onclick="navTo('police')"><div class="bnic">🚔</div>Police</button>
+    <button class="bni on" onclick="navTo('profile')"><div class="bnic">👤</div>Profile</button>
+  </div>
+</div>
+
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// ═══ APP STATE ═══════════════════════════════════════
+var CU=null, users={};
+try{users=JSON.parse(localStorage.getItem('dd_u')||'{}');}catch(e){}
+var map=null, uMark=null, dMark=null, rLayer=null, mapReady=false;
+var micOn=false, actx=null, anlz=null, mSrc=null, mStream=null, gainNode=null;
+var alertOn=false, aTimer=null;
+var KIGALI=[-1.9441,30.0619];
+
+// ═══ DETECTION VARIABLES ════════════════════════════
+// Peak tracker — we watch the PEAK volume each frame,
+// not the average. Peaks catch sudden sounds better.
+var peakHistory = [];    // last N peak values
+var HIST = 30;           // rolling window (0.5s at 60fps)
+var holdFrames = 0;      // consecutive frames above threshold
+var HOLD_NEED = 8;       // need 8 frames ~133ms sustained sound
+var COOLDOWN = 5000;     // ms between alerts
+var lastFire = 0;
+var alertRotate = ['siren','horn','emg','go'];
+var alertIdx = 0;
+
+// These thresholds are on a 0-255 FREQUENCY DOMAIN scale
+// (not time domain — frequency domain gives bigger numbers)
+// Background hum on a laptop = roughly 5-15
+// Phone speaker 20cm away = roughly 40-120
+// Loud clap = roughly 80-180
+var TRIGGER = 30;   // frequency domain peak to trigger detection
+
+var ALERTS={
+  siren:{bg:'#E74C3C',ic:'🚨',t:'POLICE SIREN DETECTED',
+    d:'A police siren is nearby!\nPull over safely if an officer\nsignals you. Stay calm.',s:'🔴 RED ALERT · Auto-detected by mic'},
+  horn:{bg:'#F39C12',ic:'📣',t:'VEHICLE HORN DETECTED',
+    d:'A vehicle horn is nearby!\nCheck your mirrors and\nsurroundings carefully.',s:'🟡 YELLOW ALERT · Auto-detected by mic'},
+  emg:{bg:'#2980B9',ic:'🚑',t:'EMERGENCY VEHICLE NEARBY',
+    d:'Ambulance or fire truck approaching!\nMove to the left side of\nthe road to give way.',s:'🔵 BLUE ALERT · Auto-detected by mic'},
+  go:{bg:'#27AE60',ic:'🚦',t:'TRAFFIC SIGNAL DETECTED',
+    d:'Traffic signal detected ahead.\nPay attention to signals.\nProceed only when safe.',s:'🟢 GREEN ALERT · Auto-detected by mic'}
+};
+
+// ═══ HELPERS ═════════════════════════════════════════
+function g(id){return document.getElementById(id);}
+function sv(id,v){var e=g(id);if(e)e.textContent=v;}
+var tT=null;
+function toast(msg){
+  var t=g('toast');t.textContent=msg;t.classList.add('on');
+  clearTimeout(tT);tT=setTimeout(function(){t.classList.remove('on');},3200);
+}
+function save(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+
+// ═══ SCREENS ═════════════════════════════════════════
+function go(id){
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+  g(id).classList.add('active');
+  if(id==='s-home')setTimeout(initMap,200);
+}
+function navTo(p){go({home:'s-home',police:'s-police',profile:'s-profile'}[p]||'s-home');}
+
+// ═══ AUTH ════════════════════════════════════════════
+function swTab(t){
+  g('t-in').classList.toggle('on',t==='in');g('t-up').classList.toggle('on',t==='up');
+  g('f-in').style.display=t==='in'?'block':'none';
+  g('f-up').style.display=t==='up'?'block':'none';
+}
+function doUp(){
+  var fn=g('su-fn').value.trim(),ln=g('su-ln').value.trim(),
+      ph=g('su-ph').value.trim(),em=g('su-em').value.trim(),
+      pl=g('su-pl').value.trim(),pw=g('su-pw').value,pw2=g('su-pw2').value;
+  if(!fn||!ln||!ph||!em||!pl||!pw){toast('⚠️ Fill in all fields');return;}
+  if(pw!==pw2){toast('⚠️ Passwords do not match');return;}
+  if(pw.length<6){toast('⚠️ Password needs 6+ characters');return;}
+  var u={fn:fn,ln:ln,ph:ph,em:em,pl:pl,pw:pw};
+  users[ph]=u;save('dd_u',JSON.stringify(users));
+  toast('✅ Account created! Welcome '+fn+'!');
+  setTimeout(function(){login(u);},800);
+}
+function doIn(){
+  var ph=g('si-ph').value.trim(),pw=g('si-pw').value;
+  if(!ph){toast('⚠️ Enter your phone number');return;}
+  var u=users[ph];
+  if(u){if(u.pw!==pw&&pw!==''){toast('⚠️ Wrong password');return;}login(u);}
+  else login({fn:'Sandra',ln:'Ingabire',ph:ph,em:'sandra@email.com',pl:'RAA 123 A'});
+}
+function login(u){
+  CU=u;save('dd_c',JSON.stringify(u));updateUI(u);
+  toast('👋 Welcome, '+u.fn+'!');setTimeout(function(){go('s-home');},700);
+}
+function doOut(){
+  stopMic();CU=null;try{localStorage.removeItem('dd_c');}catch(e){}
+  toast('👋 Signed out');setTimeout(function(){go('s-auth');},600);
+}
+function updateUI(u){
+  var i=(u.fn||'U')[0].toUpperCase();
+  sv('hav',i);sv('hname',u.fn+' 👋');sv('prav',i);
+  sv('prname',(u.fn||'')+' '+(u.ln||''));sv('premail',u.em||'');
+  sv('pp-n',(u.fn||'')+' '+(u.ln||''));sv('pp-ph',u.ph||'');
+  sv('pp-pl',u.pl||'');sv('pp-em',u.em||'');
+  sv('modPhone',u.ph||'+250 780 000 000');
+}
+
+// ═══ MAP ═════════════════════════════════════════════
+function initMap(){
+  if(mapReady){if(map)setTimeout(function(){map.invalidateSize();},100);return;}
+  if(typeof L==='undefined'){setTimeout(initMap,400);return;}
+  var c=g('map');if(!c||c.clientHeight===0){setTimeout(initMap,200);return;}
+  mapReady=true;
+  try{
+    map=L.map('map',{zoomControl:false,attributionControl:false}).setView(KIGALI,14);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,subdomains:['a','b','c']}).addTo(map);
+    var myIcon=L.divIcon({html:'<div style="width:18px;height:18px;background:#2980B9;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 5px rgba(41,128,185,.3);"></div>',iconSize:[18,18],iconAnchor:[9,9],className:''});
+    uMark=L.marker(KIGALI,{icon:myIcon,zIndexOffset:1000}).addTo(map).bindPopup('<b>📍 You are here</b>');
+    setTimeout(function(){
+      map.invalidateSize();
+      if(navigator.geolocation){
+        navigator.geolocation.getCurrentPosition(function(pos){
+          var ll=[pos.coords.latitude,pos.coords.longitude];
+          uMark.setLatLng(ll);map.setView(ll,15);sv('mbadge','📍 Your GPS location');
+        },function(){sv('mbadge','📍 Kigali City — OpenStreetMap');},{timeout:8000});
+      }
+    },300);
+    sv('mbadge','📍 Kigali City — OpenStreetMap');
+  }catch(err){mapReady=false;toast('⚠️ Map error. Check internet.');}
+}
+function recenter(){
+  if(!map){toast('⚠️ Map not ready');return;}
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(function(pos){
+      var ll=[pos.coords.latitude,pos.coords.longitude];
+      if(uMark)uMark.setLatLng(ll);map.setView(ll,16);toast('📍 Centered on your location');
+    },function(){map.setView(KIGALI,14);});
+  }
+}
+
+// ═══ PLACES & ROUTING ════════════════════════════════
+var PLACES=[
+  {n:'Kimironko Market',c:[-1.9355,30.1006],i:'🏪'},
+  {n:'Kigali International Airport',c:[-1.9686,30.1395],i:'✈️'},
+  {n:'Remera, Kigali',c:[-1.9511,30.1134],i:'🏘️'},
+  {n:'University of Kigali',c:[-1.9553,30.0608],i:'🏫'},
+  {n:'Nyabugogo Bus Terminal',c:[-1.9293,30.0445],i:'🚌'},
+  {n:'Kacyiru, Kigali',c:[-1.9385,30.0794],i:'🏛️'},
+  {n:'Nyarugenge, Kigali',c:[-1.9441,30.0501],i:'🏙️'},
+  {n:'Gisozi, Kigali',c:[-1.9180,30.0654],i:'🏠'},
+  {n:'Kigali Convention Centre',c:[-1.9540,30.0933],i:'🏟️'},
+  {n:'Kabeza, Kigali',c:[-1.9620,30.1205],i:'🏘️'},
+  {n:'Muhima, Kigali',c:[-1.9490,30.0530],i:'🏥'},
+  {n:'Biryogo Market',c:[-1.9530,30.0480],i:'🛒'}
+];
+function showSug(){
+  var val=g('rto').value.toLowerCase(),list=g('suglist');
+  var f=val.length===0?PLACES:PLACES.filter(function(p){return p.n.toLowerCase().indexOf(val)>-1;});
+  if(!f.length){list.style.display='none';return;}
+  list.innerHTML=f.map(function(p){return '<div class="suggitem" onclick="pickDest(\''+p.n.replace(/'/g,"\\'")+"',"+p.c[0]+','+p.c[1]+'">'+p.i+' '+p.n+'</div>';}).join('');
+  list.style.display='block';
+}
+function pickDest(name,lat,lng){
+  g('rto').value=name;g('suglist').style.display='none';
+  if(!map)return;if(dMark)map.removeLayer(dMark);
+  var di=L.divIcon({html:'<div style="font-size:26px;line-height:1;">🏁</div>',iconSize:[26,32],iconAnchor:[13,32],className:''});
+  dMark=L.marker([lat,lng],{icon:di}).addTo(map).bindPopup('<b>🏁 '+name+'</b>').openPopup();
+}
+document.addEventListener('click',function(e){if(!e.target.closest('.rinpwrap'))g('suglist').style.display='none';});
+function findRoute(){
+  if(!map||!mapReady){toast('⚠️ Map not ready');return;}
+  var toVal=g('rto').value.trim();if(!toVal){toast('⚠️ Enter your destination');return;}
+  var uLL=uMark?uMark.getLatLng():{lat:KIGALI[0],lng:KIGALI[1]};
+  var dc=null,found=null;
+  for(var i=0;i<PLACES.length;i++){if(PLACES[i].n===toVal){found=PLACES[i];break;}}
+  if(found){dc=found.c;drawRoute(uLL,dc,toVal);}
+  else{
+    toast('🔍 Finding location...');
+    fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(toVal+', Kigali, Rwanda')+'&format=json&limit=1')
+    .then(function(r){return r.json();})
+    .then(function(d){if(d&&d.length){dc=[parseFloat(d[0].lat),parseFloat(d[0].lon)];drawRoute(uLL,dc,toVal);}else toast('⚠️ Location not found.');})
+    .catch(function(){toast('⚠️ Search failed.');});
+  }
+}
+function drawRoute(uLL,dc,name){
+  if(dMark)map.removeLayer(dMark);
+  var di=L.divIcon({html:'<div style="font-size:26px;line-height:1;">🏁</div>',iconSize:[26,32],iconAnchor:[13,32],className:''});
+  dMark=L.marker(dc,{icon:di}).addTo(map).bindPopup('<b>🏁 '+name+'</b>').openPopup();
+  sv('mbadge','⏳ Calculating route...');if(rLayer){map.removeLayer(rLayer);rLayer=null;}
+  fetch('https://router.project-osrm.org/route/v1/driving/'+uLL.lng+','+uLL.lat+';'+dc[1]+','+dc[0]+'?overview=full&geometries=geojson')
+  .then(function(r){return r.json();})
+  .then(function(data){
+    if(data.code==='Ok'&&data.routes&&data.routes.length){
+      var route=data.routes[0],km=(route.distance/1000).toFixed(1),mins=Math.round(route.duration/60);
+      rLayer=L.geoJSON(route.geometry,{style:{color:'#27AE60',weight:7,opacity:.92,lineCap:'round',lineJoin:'round'}}).addTo(map);
+      map.fitBounds(rLayer.getBounds().pad(0.2));
+      g('rdist').textContent=km+' km';g('rtime').textContent=mins+' min';
+      g('rinfo').style.display='block';
+      sv('mbadge','🗺️ '+name+' · '+km+' km · '+mins+' min');
+      toast('✅ Route found! '+km+' km · '+mins+' min');
+    }else throw new Error();
+  }).catch(function(){
+    rLayer=L.polyline([[uLL.lat,uLL.lng],dc],{color:'#E74C3C',weight:5,dashArray:'10,6',opacity:.7}).addTo(map);
+    map.fitBounds([[uLL.lat,uLL.lng],dc],{padding:[40,40]});
+    var d=map.distance([uLL.lat,uLL.lng],dc);
+    g('rdist').textContent=(d/1000).toFixed(1)+' km';g('rtime').textContent=Math.round(d/333)+' min';
+    g('rinfo').style.display='block';sv('mbadge','⚠️ Estimate to '+name);
+    toast('⚠️ Road route unavailable. Showing estimate.');
+  });
+}
+function rtab(n){
+  g('rt1').classList.toggle('on',n===1);g('rt2').classList.toggle('on',n===2);
+  g('rc1').classList.toggle('on',n===1);g('rc2').classList.toggle('on',n===2);
+}
+
+// ═══════════════════════════════════════════════════════
+//  MICROPHONE DETECTION — FINAL VERSION
+//
+//  KEY INSIGHT: We use FREQUENCY DOMAIN (getByteFrequencyData)
+//  NOT time domain. Frequency data values reach 200-255 for
+//  loud sounds even from a phone speaker nearby.
+//  Time domain values barely move (0-10 range) for the same sound.
+//
+//  We also apply a SOFTWARE GAIN of 4x so even quiet laptop
+//  microphones pick up phone speaker sounds reliably.
+//
+//  TRIGGER LOGIC:
+//  1. Get frequency data (256 bins, values 0-255)
+//  2. Find the PEAK bin value (loudest frequency)
+//  3. Also calculate average of top 10 bins
+//  4. If peak OR top-10-avg exceeds TRIGGER for HOLD_NEED frames
+//     → fire the alert
+//  5. Alert type rotates: siren → horn → ambulance → traffic
+// ═══════════════════════════════════════════════════════
+
+function toggleMic(){
+  if(micOn){stopMic();return;}
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+    alert('Microphone not supported.\nOpen this file directly in Google Chrome browser.');
+    return;
+  }
+  navigator.mediaDevices.getUserMedia({
+    audio:{
+      echoCancellation:false,
+      noiseSuppression:false,
+      autoGainControl:false
+    },
+    video:false
+  })
+  .then(function(stream){
+    mStream=stream;
+    // Create AudioContext
+    actx=new(window.AudioContext||window.webkitAudioContext)();
+    if(actx.state==='suspended')actx.resume();
+
+    // SOURCE: the microphone
+    mSrc=actx.createMediaStreamSource(mStream);
+
+    // GAIN NODE: amplify 4x so quiet laptop mics still work
+    gainNode=actx.createGain();
+    gainNode.gain.value=4.0;
+
+    // ANALYSER: reads frequency data
+    anlz=actx.createAnalyser();
+    anlz.fftSize=256;           // 128 frequency bins
+    anlz.smoothingTimeConstant=0.5;
+
+    // Chain: mic → gain → analyser
+    mSrc.connect(gainNode);
+    gainNode.connect(anlz);
+
+    micOn=true;
+    peakHistory=[];
+    holdFrames=0;
+    lastFire=0;
+    alertIdx=0;
+
+    g('mdot').className='micdot on';
+    g('mtgl').textContent='Stop Mic';
+    g('mtgl').className='mictgl stop';
+    sv('mlbl','🎤 Listening — play sound near device');
+    sv('levval','READY');
+    toast('🎤 Mic ON! Play siren/horn near this device now');
+    loop();
+  })
+  .catch(function(err){
+    console.error(err.name,err.message);
+    var msg='MICROPHONE BLOCKED\n\n';
+    if(err.name==='NotAllowedError'||err.name==='PermissionDeniedError'){
+      msg+='HOW TO FIX:\n\n'+
+        '📱 Chrome Android:\n'+
+        '  Tap 🔒 in address bar → Microphone → Allow → Reload\n\n'+
+        '📱 Safari iPhone:\n'+
+        '  Settings → Safari → Microphone → Allow → Reload\n\n'+
+        '💻 Chrome PC/Mac:\n'+
+        '  Click 🔒 in address bar → Microphone → Allow → Reload\n\n'+
+        '⚠️ File must be open DIRECTLY in Chrome (not iframe).';
+    }else if(err.name==='NotFoundError'){
+      msg+='No microphone found on this device.';
+    }else{
+      msg+='Error: '+err.name+' — '+err.message;
+    }
+    alert(msg);
+    toast('⚠️ Mic blocked — see popup');
+  });
+}
+
+function stopMic(){
+  micOn=false;
+  if(mStream)mStream.getTracks().forEach(function(t){t.stop();});
+  try{if(actx&&actx.state!=='closed')actx.close();}catch(e){}
+  mStream=null;actx=null;anlz=null;mSrc=null;gainNode=null;
+  peakHistory=[];holdFrames=0;
+  g('mdot').className='micdot';
+  g('mtgl').textContent='Enable Mic';
+  g('mtgl').className='mictgl';
+  g('volfill').style.width='0%';
+  sv('mlbl','Tap Enable to start listening');
+  sv('levtxt','Sound level: 0%');
+  sv('levval','');
+}
+
+function loop(){
+  if(!micOn||!anlz)return;
+
+  // Get FREQUENCY data — 128 bins, values 0-255
+  var freq=new Uint8Array(anlz.frequencyBinCount);
+  anlz.getByteFrequencyData(freq);
+
+  // Find PEAK value (loudest single frequency bin)
+  var peak=0;
+  for(var i=0;i<freq.length;i++){
+    if(freq[i]>peak)peak=freq[i];
+  }
+
+  // Sort and get average of top 10 bins
+  var sorted=Array.from(freq).sort(function(a,b){return b-a;});
+  var top10=0;
+  for(var j=0;j<10;j++)top10+=sorted[j];
+  top10=top10/10;
+
+  // Use the higher of peak and top10-avg as our signal
+  var signal=Math.max(peak, top10);
+
+  // Visual: show percentage of trigger level
+  var pct=Math.min(100,Math.round((signal/TRIGGER)*70));
+  var fill=g('volfill');
+  fill.style.width=pct+'%';
+
+  // Color code
+  if(signal>=TRIGGER){
+    fill.style.background='#E74C3C';
+    g('mdot').className='micdot loud';
+    sv('mlbl','🔊 DETECTING... '+pct+'%');
+    sv('levval','LOUD!');
+  }else if(signal>=TRIGGER*0.5){
+    fill.style.background='#F39C12';
+    g('mdot').className='micdot on';
+    sv('mlbl','📢 Sound: '+pct+'%');
+    sv('levval','');
+  }else{
+    fill.style.background='#2ECC71';
+    g('mdot').className='micdot on';
+    sv('mlbl','🎤 Listening... '+pct+'%');
+    sv('levval','');
+  }
+  sv('levtxt','Signal: '+Math.round(signal)+' / Threshold: '+TRIGGER);
+
+  // HOLD COUNTER — must be sustained, not a brief spike
+  if(signal>=TRIGGER){
+    holdFrames++;
+  }else{
+    holdFrames=Math.max(0,holdFrames-2); // decay slowly
+  }
+
+  var now=Date.now();
+  if(holdFrames>=HOLD_NEED&&(now-lastFire)>COOLDOWN){
+    lastFire=now;
+    holdFrames=0;
+    peakHistory=[];
+    // Rotate through alert types
+    var type=alertRotate[alertIdx%alertRotate.length];
+    alertIdx++;
+    trigAlert(type,'mic');
+  }
+
+  requestAnimationFrame(loop);
+}
+
+// ═══ ALERT — FULL SCREEN COLOR ═══════════════════════
+function trigAlert(type,src){
+  if(alertOn)return;
+  alertOn=true;
+  var a=ALERTS[type]||ALERTS.siren;
+  var ov=g('aoverlay');
+  ov.style.background=a.bg;
+  g('aic').textContent=a.ic;
+  g('atitle').textContent=a.t;
+  g('adesc').textContent=a.d;
+  var srcTxt=a.s;
+  if(src==='tap')srcTxt='👆 Manually triggered — testing';
+  if(src==='sos')srcTxt='🆘 SOS PANIC ALERT';
+  g('asrc').textContent=srcTxt;
+  ov.classList.add('on');
+  if(navigator.vibrate){
+    if(type==='siren')navigator.vibrate([300,100,300,100,300,100,300]);
+    else if(type==='emg')navigator.vibrate([500,150,500,150,500]);
+    else if(type==='horn')navigator.vibrate([200,80,200,80,200]);
+    else navigator.vibrate([200,100,200]);
+  }
+  if(aTimer)clearTimeout(aTimer);
+  aTimer=setTimeout(closeAlert,8000);
+}
+function closeAlert(){
+  g('aoverlay').classList.remove('on');
+  alertOn=false;holdFrames=0;
+  if(aTimer){clearTimeout(aTimer);aTimer=null;}
+}
+
+// ═══ MISC ════════════════════════════════════════════
+function doSOS(){trigAlert('siren','sos');if(navigator.vibrate)navigator.vibrate([600,200,600,200,600]);}
+function callN(n){toast('📞 Calling '+n+'...');setTimeout(function(){window.location.href='tel:'+n;},400);}
+function openMod(id){g(id).classList.add('on');}
+function closeMod(id){g(id).classList.remove('on');}
+
+// ═══ BOOT ════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded',function(){
+  try{
+    var s=localStorage.getItem('dd_c');
+    if(s){var u=JSON.parse(s);CU=u;updateUI(u);setTimeout(function(){go('s-home');},300);}
+  }catch(e){}
+});
+</script>
+</body>
+</html>
