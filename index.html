@@ -4,35 +4,46 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>DeafDrive Kigali</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <style>
-:root{--green:#27AE60;--red:#E74C3C;--blue:#2980B9;--yellow:#F39C12;--bg:#F0F4F8;--text:#1A252F;--muted:#7F8C8D;--border:#D5DBDB;--kigali:#1A5276;--accent:#2ECC71;}
+:root{
+  --green:#27AE60;--red:#E74C3C;--blue:#2980B9;
+  --yellow:#F39C12;--bg:#F0F4F8;--text:#1A252F;
+  --muted:#7F8C8D;--border:#D5DBDB;--kigali:#1A5276;
+  --accent:#2ECC71;
+}
+:root{--card:#ffffff;}
+.app.dark{
+  --bg:#12161B;--text:#ECEFF3;--muted:#8A97A2;--border:#2A3238;
+  --card:#1B2127;--kigali:#2E86C1;--soft:#232B32;
+}
+:root{--soft:#E8EEF2;}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html,body{height:100%;overflow:hidden;}
 body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);display:flex;justify-content:center;}
-.app{width:100%;max-width:430px;height:100vh;display:flex;flex-direction:column;background:var(--bg);overflow:hidden;}
+.app{width:100%;max-width:430px;height:100vh;height:100dvh;display:flex;flex-direction:column;background:var(--bg);overflow:hidden;transition:background .25s,color .25s;}
 .screen{display:none;flex-direction:column;height:100%;overflow:hidden;}
 .screen.active{display:flex;}
 /* SPLASH */
 #s-splash{background:linear-gradient(160deg,#1A5276,#0E3D5C);align-items:center;justify-content:center;text-align:center;padding:40px 30px;}
-.sp-icon{width:110px;height:110px;background:rgba(255,255,255,.12);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:54px;margin:0 auto 20px;}
+.sp-icon{width:110px;height:110px;background:rgba(255,255,255,.12);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:54px;margin:0 auto 20px;border:3px solid rgba(255,255,255,.2);}
 .sp-title{font-size:38px;font-weight:900;color:#fff;}
 .sp-sub{font-size:12px;color:rgba(255,255,255,.55);margin-top:5px;letter-spacing:3px;text-transform:uppercase;}
 .sp-tag{font-size:15px;color:rgba(255,255,255,.82);margin-top:16px;line-height:1.7;}
-.sp-btn{margin-top:36px;background:#2ECC71;color:#fff;border:none;border-radius:50px;padding:18px 52px;font-size:18px;font-weight:800;cursor:pointer;}
+.sp-btn{margin-top:36px;background:#2ECC71;color:#fff;border:none;border-radius:50px;padding:18px 52px;font-size:18px;font-weight:800;cursor:pointer;box-shadow:0 8px 28px rgba(46,204,113,.45);}
 .sp-flag{margin-top:14px;font-size:12px;color:rgba(255,255,255,.4);}
 /* AUTH */
 #s-auth{background:var(--bg);overflow-y:auto;}
 .auth-top{background:linear-gradient(135deg,#1A5276,#0E3D5C);padding:44px 28px 30px;text-align:center;border-radius:0 0 30px 30px;flex-shrink:0;}
 .auth-top h2{color:#fff;font-size:23px;font-weight:800;}
 .auth-top p{color:rgba(255,255,255,.68);font-size:13px;margin-top:4px;}
-.tabs{display:flex;margin:18px 18px 0;background:#E8EEF2;border-radius:12px;padding:4px;}
+.tabs{display:flex;margin:18px 18px 0;background:var(--soft);border-radius:12px;padding:4px;flex-shrink:0;}
 .tab{flex:1;padding:10px;text-align:center;font-size:14px;font-weight:600;border-radius:9px;cursor:pointer;color:var(--muted);border:none;background:none;}
-.tab.on{background:#fff;color:var(--kigali);box-shadow:0 2px 8px rgba(0,0,0,.1);}
+.tab.on{background:var(--card);color:var(--kigali);box-shadow:0 2px 8px rgba(0,0,0,.1);}
 .aform{padding:16px 18px;flex:1;overflow-y:auto;}
 .fg{margin-bottom:13px;}
 .fl{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px;display:block;}
-.fi{width:100%;padding:13px 14px;border:2px solid var(--border);border-radius:11px;font-size:15px;color:var(--text);background:#fff;outline:none;-webkit-appearance:none;}
+.fi{width:100%;padding:13px 14px;border:2px solid var(--border);border-radius:11px;font-size:15px;color:var(--text);background:var(--card);outline:none;-webkit-appearance:none;}
 .fi:focus{border-color:var(--kigali);}
 .fi::placeholder{color:#BDC3C7;}
 .frow{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
@@ -45,49 +56,57 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .hwelc{color:rgba(255,255,255,.7);font-size:10px;}
 .hname{color:#fff;font-size:14px;font-weight:700;}
 .dbadge{background:rgba(255,255,255,.15);border-radius:20px;padding:5px 10px;color:#fff;font-size:11px;font-weight:600;}
-/* MIC PANEL */
-.micpanel{background:#0D1B2A;flex-shrink:0;padding:10px 13px 8px;}
-.microw1{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
-.micdot{width:10px;height:10px;border-radius:50%;background:#444;flex-shrink:0;}
-.micdot.on{background:#2ECC71;}
-.micdot.loud{background:#E74C3C;animation:bl .12s infinite;}
-@keyframes bl{0%,100%{opacity:1;}50%{opacity:.05;}}
-.miclbl{font-size:11px;font-weight:600;color:rgba(255,255,255,.65);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.mictgl{font-size:11px;font-weight:800;color:#fff;cursor:pointer;background:#1A5276;border:none;padding:7px 13px;border-radius:8px;flex-shrink:0;}
-.mictgl.stop{background:#C0392B;}
-/* BIG volume bar */
-.volbar{height:14px;background:#1A2634;border-radius:7px;overflow:hidden;position:relative;}
-.volfill{height:100%;width:0%;border-radius:7px;transition:width .04s,background .1s;}
-.volmarks{display:flex;justify-content:space-between;margin-top:3px;}
-.volmark{font-size:9px;color:rgba(255,255,255,.3);}
-/* LEVEL readout */
-.levrow{display:flex;align-items:center;justify-content:space-between;margin-top:4px;}
-.levtxt{font-size:10px;color:rgba(255,255,255,.4);}
-.levval{font-size:11px;font-weight:800;color:#2ECC71;}
+/* MIC BAR */
+.micbar{display:flex;align-items:center;gap:7px;padding:8px 13px;background:var(--card);border-bottom:1px solid var(--border);flex-shrink:0;}
+.micdot{width:10px;height:10px;border-radius:50%;background:#ccc;flex-shrink:0;transition:background .3s;}
+.micdot.on{background:var(--green);}
+.micdot.loud{background:var(--red);animation:blink .25s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.2;}}
+.miclbl{font-size:11px;font-weight:600;color:var(--muted);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
+.miclvl{width:80px;height:7px;background:var(--soft);border-radius:4px;overflow:hidden;flex-shrink:0;}
+.miclvlf{height:100%;background:var(--green);border-radius:4px;width:0%;transition:width .05s;}
+.mictgl{font-size:11px;font-weight:700;color:var(--kigali);cursor:pointer;background:#EBF5FB;border:none;padding:5px 10px;border-radius:8px;flex-shrink:0;white-space:nowrap;}
+/* SENSITIVITY ROW */
+.sensbar{display:none;background:var(--soft);border-bottom:1px solid var(--border);padding:6px 13px;flex-shrink:0;align-items:center;gap:8px;}
+.sensbar label{font-size:11px;font-weight:600;color:var(--muted);white-space:nowrap;}
+.sensbar input[type=range]{flex:1;}
+.sensbar span{font-size:11px;font-weight:700;color:var(--kigali);min-width:30px;text-align:right;}
+/* DEMO BAR */
+.demobar{display:none;background:#1A252F;padding:6px 12px;flex-shrink:0;}
+.demobar-inner{display:flex;align-items:center;gap:5px;}
+.demobar-lbl{font-size:9px;color:rgba(255,255,255,.5);font-weight:700;flex-shrink:0;white-space:nowrap;}
+.dbtn{flex:1;border:none;border-radius:7px;padding:6px 2px;font-size:10px;font-weight:800;cursor:pointer;color:#fff;}
 /* MAP */
-.mapwrap{height:235px;position:relative;flex-shrink:0;}
+.mapwrap{height:240px;position:relative;flex-shrink:0;}
 #map{height:100%;width:100%;}
 .mapbadge{position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(26,82,118,.9);color:#fff;font-size:11px;font-weight:700;padding:4px 12px;border-radius:18px;white-space:nowrap;z-index:1000;pointer-events:none;max-width:88%;overflow:hidden;text-overflow:ellipsis;}
-.maprec{position:absolute;bottom:9px;right:9px;z-index:1000;background:#fff;border:none;border-radius:50%;width:36px;height:36px;font-size:17px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;}
-.rpanel{flex:1;background:#fff;overflow-y:auto;border-top:1px solid var(--border);}
-.rtabs{display:flex;border-bottom:1px solid var(--border);position:sticky;top:0;background:#fff;z-index:10;}
+.maprec{position:absolute;bottom:9px;right:9px;z-index:1000;background:var(--card);border:none;border-radius:50%;width:36px;height:36px;font-size:17px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;}
+.mapzoom{position:absolute;bottom:9px;left:9px;z-index:1000;display:flex;flex-direction:column;gap:6px;}
+.mapzbtn{background:var(--card);border:none;border-radius:10px;width:34px;height:34px;font-size:14px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;color:var(--text);}
+.mapzbtn:active{transform:scale(.92);}
+/* PANEL */
+.rpanel{flex:1;background:var(--card);overflow-y:auto;border-top:1px solid var(--border);}
+.rtabs{display:flex;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--card);z-index:10;}
 .rtab{flex:1;padding:9px;text-align:center;font-size:12px;font-weight:700;cursor:pointer;color:var(--muted);border:none;background:none;border-bottom:2px solid transparent;}
 .rtab.on{color:var(--kigali);border-bottom-color:var(--kigali);}
 .rtabc{display:none;padding:11px 13px;}
 .rtabc.on{display:block;}
 .rinpwrap{position:relative;margin-bottom:7px;}
 .rdot{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:9px;height:9px;border-radius:50%;}
-.rdot.s{background:var(--blue);}.rdot.e{background:var(--red);}
+.rdot.s{background:var(--blue);}
+.rdot.e{background:var(--red);}
 .rinp{width:100%;padding:11px 11px 11px 28px;border:1.5px solid var(--border);border-radius:9px;font-size:14px;color:var(--text);background:var(--bg);outline:none;}
-.rinp:focus{border-color:var(--kigali);background:#fff;}
-.sugg{position:absolute;left:0;right:0;top:calc(100% + 2px);background:#fff;border-radius:9px;box-shadow:0 6px 20px rgba(0,0,0,.15);z-index:9000;display:none;max-height:150px;overflow-y:auto;}
+.rinp:focus{border-color:var(--kigali);background:var(--card);}
+.sugg{position:absolute;left:0;right:0;top:calc(100% + 2px);background:var(--card);border-radius:9px;box-shadow:0 6px 20px rgba(0,0,0,.15);z-index:9000;display:none;max-height:150px;overflow-y:auto;}
 .suggitem{padding:9px 13px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:13px;border-bottom:1px solid var(--border);}
+.suggitem.suggsearch{font-weight:700;color:var(--kigali);background:var(--soft);}
 .suggitem:last-child{border-bottom:none;}
 .rbtn{width:100%;padding:12px;background:var(--kigali);color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;}
 .rinfo{background:#EBF5FB;border-radius:9px;padding:9px 13px;margin-top:7px;display:none;}
 .rstats{display:flex;justify-content:space-around;}
 .rstat-v{font-size:17px;font-weight:800;color:var(--kigali);text-align:center;}
 .rstat-l{font-size:10px;color:var(--muted);text-align:center;margin-top:2px;}
+/* ALERT CARDS */
 .acards{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
 .acard{border-radius:11px;padding:12px;display:flex;flex-direction:column;align-items:center;text-align:center;cursor:pointer;border:2.5px solid transparent;transition:transform .15s;}
 .acard:active{transform:scale(.95);}
@@ -103,17 +122,20 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .acard.g .abar{background:var(--green);}
 .acard.b .abar{background:var(--blue);}
 .acard.y .abar{background:var(--yellow);}
-.bnav{display:flex;background:#fff;border-top:1px solid var(--border);padding:7px 0 14px;flex-shrink:0;}
+/* BOTTOM NAV */
+.bnav{display:flex;background:var(--card);border-top:1px solid var(--border);padding:7px 0 14px;flex-shrink:0;}
 .bni{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 0;border:none;background:none;color:var(--muted);font-size:10px;font-weight:600;text-transform:uppercase;}
 .bni.on{color:var(--kigali);}
 .bnic{font-size:20px;}
-/* FULL SCREEN ALERT */
+/* FULL SCREEN ALERT OVERLAY */
 .aoverlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:999999;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px;}
-.aoverlay.on{display:flex;animation:pulse .6s ease-in-out infinite alternate;}
-@keyframes pulse{from{filter:brightness(1);}to{filter:brightness(1.18);}}
-.aclose{position:absolute;top:44px;right:20px;background:rgba(0,0,0,.35);border:2.5px solid rgba(255,255,255,.6);border-radius:50%;width:50px;height:50px;color:#fff;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
-.aic{font-size:90px;margin-bottom:10px;animation:bncIcon .5s infinite alternate;}
-@keyframes bncIcon{from{transform:scale(1);}to{transform:scale(1.25);}}
+.aoverlay.on{display:flex;}
+@keyframes screenFlash{0%{filter:brightness(1);}50%{filter:brightness(1.2);}100%{filter:brightness(1);}}
+.aoverlay.on{animation:screenFlash .8s ease-in-out infinite;}
+.aclose{position:absolute;top:44px;right:20px;background:rgba(0,0,0,.35);border:2.5px solid rgba(255,255,255,.6);border-radius:50%;width:50px;height:50px;color:#fff;font-size:22px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1000000;}
+.aic{font-size:90px;margin-bottom:10px;}
+@keyframes iconBounce{from{transform:scale(1);}to{transform:scale(1.25);}}
+.aic{animation:iconBounce .5s infinite alternate;}
 .atitle{font-size:34px;font-weight:900;color:#fff;text-shadow:0 3px 10px rgba(0,0,0,.4);line-height:1.1;}
 .adesc{font-size:15px;color:rgba(255,255,255,.92);margin-top:14px;max-width:280px;line-height:1.7;white-space:pre-line;}
 .asrc{font-size:13px;color:rgba(255,255,255,.65);margin-top:10px;}
@@ -124,7 +146,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .phdr h2{color:#fff;font-size:20px;font-weight:800;}
 .phdr p{color:rgba(255,255,255,.75);font-size:12px;margin-top:3px;}
 .pbody{padding:15px;flex:1;overflow-y:auto;}
-.pcard{background:#fff;border-radius:14px;padding:15px;margin-bottom:12px;box-shadow:0 4px 16px rgba(0,0,0,.1);}
+.pcard{background:var(--card);border-radius:14px;padding:15px;margin-bottom:12px;box-shadow:0 4px 16px rgba(0,0,0,.1);}
 .pctitle{font-size:13px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:6px;margin-bottom:10px;}
 .dcard{background:linear-gradient(135deg,var(--kigali),#1A6A9A);border-radius:11px;padding:15px;display:flex;align-items:center;gap:11px;cursor:pointer;margin-bottom:11px;}
 .dcardic{font-size:38px;}
@@ -136,7 +158,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .emb-ic{font-size:22px;margin-bottom:3px;}
 .emb-n{font-size:11px;font-weight:800;color:var(--text);}
 .emb-num{font-size:15px;font-weight:900;color:var(--kigali);}
-.msgprev{background:#F8F9FA;border-radius:9px;padding:11px;border-left:4px solid var(--accent);margin-top:6px;}
+.msgprev{background:var(--soft);border-radius:9px;padding:11px;border-left:4px solid var(--accent);margin-top:6px;}
 .msgprev p{font-size:12px;color:var(--text);line-height:1.65;font-style:italic;}
 /* PROFILE */
 #s-profile{background:var(--bg);overflow-y:auto;}
@@ -146,7 +168,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .proemail{color:rgba(255,255,255,.68);font-size:12px;margin-top:3px;}
 .probadge{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.15);border-radius:20px;padding:5px 12px;color:#fff;font-size:11px;font-weight:700;margin-top:7px;}
 .probody{padding:15px;flex:1;}
-.procard{background:#fff;border-radius:14px;padding:4px 0;margin-bottom:12px;box-shadow:0 4px 16px rgba(0,0,0,.1);}
+.procard{background:var(--card);border-radius:14px;padding:4px 0;margin-bottom:12px;box-shadow:0 4px 16px rgba(0,0,0,.1);}
 .proitem{display:flex;align-items:center;gap:11px;padding:13px 15px;border-bottom:1px solid var(--border);cursor:pointer;}
 .proitem:last-child{border-bottom:none;}
 .proitem-ic{font-size:18px;width:32px;text-align:center;}
@@ -155,27 +177,29 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .proitem-sb{font-size:11px;color:var(--muted);margin-top:1px;}
 .proitem-ar{color:var(--muted);font-size:16px;}
 .logoutbtn{width:100%;padding:13px;background:#FDEDEC;color:var(--red);border:2px solid var(--red);border-radius:11px;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;}
+/* MODAL */
 .moverlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:50000;display:none;align-items:flex-end;justify-content:center;}
 .moverlay.on{display:flex;}
-.msheet{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:430px;padding:18px;max-height:88vh;overflow-y:auto;}
+.msheet{background:var(--card);border-radius:20px 20px 0 0;width:100%;max-width:430px;padding:18px;max-height:88vh;overflow-y:auto;}
 .mhandle{width:34px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 14px;}
 .mtitle{font-size:17px;font-weight:800;color:var(--text);margin-bottom:11px;}
 .sgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
-.sitem{background:var(--bg);border-radius:11px;padding:12px 5px;text-align:center;}
+.sitem{background:var(--bg);border-radius:11px;padding:12px 5px;text-align:center;cursor:pointer;}
 .sitem-em{font-size:30px;margin-bottom:4px;}
 .sitem-lb{font-size:10px;font-weight:700;color:var(--text);}
 .mclose{width:100%;padding:13px;background:var(--kigali);color:#fff;border:none;border-radius:11px;font-size:14px;font-weight:700;cursor:pointer;margin-top:12px;}
+/* TOAST */
 .toast{position:fixed;top:18px;left:50%;transform:translateX(-50%);background:#1A252F;color:#fff;padding:11px 20px;border-radius:24px;font-size:13px;font-weight:600;z-index:999999;opacity:0;transition:opacity .25s;pointer-events:none;max-width:86vw;text-align:center;}
 .toast.on{opacity:1;}
 ::-webkit-scrollbar{display:none;}*{scrollbar-width:none;}
-.leaflet-popup-content-wrapper{border-radius:11px;font-size:13px;font-weight:600;}
+.leaflet-popup-content-wrapper{border-radius:11px;font-family:'Segoe UI',system-ui,sans-serif;font-size:13px;font-weight:600;}
 </style>
 </head>
 <body>
 <div class="app">
 <div class="toast" id="toast"></div>
 
-<!-- FULL SCREEN ALERT -->
+<!-- FULL SCREEN ALERT — changes color per sound type -->
 <div class="aoverlay" id="aoverlay">
   <button class="aclose" onclick="closeAlert()">✕</button>
   <div class="aic" id="aic">🚨</div>
@@ -261,44 +285,59 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
       <div class="hav" id="hav">S</div>
       <div><div class="hwelc">Good day,</div><div class="hname" id="hname">Sandra 👋</div></div>
     </div>
-    <div class="dbadge">🦻 Deaf Mode ON</div>
-  </div>
-
-  <!-- MIC PANEL -->
-  <div class="micpanel">
-    <div class="microw1">
-      <div class="micdot" id="mdot"></div>
-      <div class="miclbl" id="mlbl">Tap Enable to start listening</div>
-      <button class="mictgl" id="mtgl" onclick="toggleMic()">Enable Mic</button>
-    </div>
-    <div class="volbar">
-      <div class="volfill" id="volfill"></div>
-    </div>
-    <div class="levrow">
-      <span class="levtxt" id="levtxt">Sound level: 0%</span>
-      <span class="levval" id="levval"></span>
+    <div style="display:flex;align-items:center;gap:7px;">
+      <button id="themeBtn" onclick="toggleTheme()" style="background:rgba(255,255,255,.15);border:none;border-radius:50%;width:32px;height:32px;font-size:15px;cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center;" title="Switch light/dark mode">🌙</button>
+      <div class="dbadge">🦻 Deaf Mode ON</div>
     </div>
   </div>
-
+  <!-- MIC STATUS -->
+  <div class="micbar">
+    <div class="micdot" id="mdot"></div>
+    <div class="miclbl" id="mlbl">Tap Enable to start listening</div>
+    <div class="miclvl"><div class="miclvlf" id="mfill"></div></div>
+    <button class="mictgl" id="mtgl" onclick="toggleMic()">Enable Mic</button>
+  </div>
+  <!-- SENSITIVITY SLIDER (shown when mic is on) -->
+  <div class="sensbar" id="sensbar">
+    <label>🎚️ Sensitivity:</label>
+    <input type="range" id="sensSlider" min="1" max="10" value="5" oninput="updateSens(this.value)">
+    <span id="sensVal">5</span>
+    <button class="mictgl" style="padding:5px 8px;" onclick="boostMic()" title="If real sounds aren't triggering alerts, tap this to boost the mic further">🔊+</button>
+  </div>
+  <!-- DEMO BUTTONS (shown when mic is on) -->
+  <div class="demobar" id="demobar">
+    <div class="demobar-inner">
+      <span class="demobar-lbl">⚡ Demo alerts:</span>
+      <button class="dbtn" style="background:#E74C3C;" onclick="trigAlert('siren','demo')">🚨 Siren</button>
+      <button class="dbtn" style="background:#F39C12;" onclick="trigAlert('horn','demo')">📣 Horn</button>
+      <button class="dbtn" style="background:#2980B9;" onclick="trigAlert('emg','demo')">🚑 Ambulance</button>
+      <button class="dbtn" style="background:#27AE60;" onclick="trigAlert('go','demo')">🚦 Traffic</button>
+    </div>
+  </div>
+  <!-- MAP -->
   <div class="mapwrap">
     <div id="map"></div>
-    <div class="mapbadge" id="mbadge">📍 Kigali City</div>
+    <div class="mapbadge" id="mbadge" onclick="retryMap()" style="cursor:pointer;pointer-events:auto;">📍 Kigali City</div>
+    <div class="mapzoom">
+      <button class="mapzbtn" onclick="mapZoom(1)" title="Zoom in">➕</button>
+      <button class="mapzbtn" onclick="mapZoom(-1)" title="Zoom out">➖</button>
+    </div>
     <button class="maprec" onclick="recenter()">📍</button>
   </div>
-
+  <!-- PANEL -->
   <div class="rpanel">
     <div class="rtabs">
       <button class="rtab on" id="rt1" onclick="rtab(1)">🗺️ Navigate</button>
-      <button class="rtab" id="rt2" onclick="rtab(2)">🔔 Test Alerts</button>
+      <button class="rtab" id="rt2" onclick="rtab(2)">🔔 Alerts</button>
     </div>
     <div class="rtabc on" id="rc1">
       <div class="rinpwrap">
         <div class="rdot s"></div>
-        <input type="text" class="rinp" id="rfrom" placeholder="Your current location..." value="Nyarugenge, Kigali">
+        <input type="text" class="rinp" id="rfrom" placeholder="Detecting your location..." oninput="fromEdited=true" value="">
       </div>
       <div class="rinpwrap" style="position:relative;">
         <div class="rdot e"></div>
-        <input type="text" class="rinp" id="rto" placeholder="Where are you going?" oninput="showSug()" onfocus="showSug()">
+        <input type="text" class="rinp" id="rto" placeholder="Where are you going?" oninput="showSug()" onfocus="showSug()" onkeydown="if(event.key==='Enter'){g('suglist').style.display='none';findRoute();}">
         <div class="sugg" id="suglist"></div>
       </div>
       <button class="rbtn" onclick="findRoute()">🗺️ Find Safest Route</button>
@@ -311,16 +350,15 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
       </div>
     </div>
     <div class="rtabc" id="rc2">
-      <p style="font-size:11px;color:var(--muted);margin-bottom:10px;text-align:center;line-height:1.6;">Tap a card to test the full-screen color alert</p>
+      <p style="font-size:11px;color:var(--muted);margin-bottom:10px;text-align:center;">Tap a card to test the full-screen color alert</p>
       <div class="acards">
         <div class="acard r" onclick="trigAlert('siren','tap')"><div class="acard-ic">🚨</div><div class="acard-n">SIREN</div><div class="acard-d">Screen → RED</div><div class="abar"></div></div>
-        <div class="acard g" onclick="trigAlert('go','tap')"><div class="acard-ic">🚦</div><div class="acard-n">TRAFFIC</div><div class="acard-d">Screen → GREEN</div><div class="abar"></div></div>
+        <div class="acard g" onclick="trigAlert('go','tap')"><div class="acard-ic">🚦</div><div class="acard-n">TRAFFIC SIGNAL</div><div class="acard-d">Screen → GREEN</div><div class="abar"></div></div>
         <div class="acard b" onclick="trigAlert('emg','tap')"><div class="acard-ic">🚑</div><div class="acard-n">AMBULANCE</div><div class="acard-d">Screen → BLUE</div><div class="abar"></div></div>
-        <div class="acard y" onclick="trigAlert('horn','tap')"><div class="acard-ic">📣</div><div class="acard-n">HORN</div><div class="acard-d">Screen → YELLOW</div><div class="abar"></div></div>
+        <div class="acard y" onclick="trigAlert('horn','tap')"><div class="acard-ic">📣</div><div class="acard-n">VEHICLE HORN</div><div class="acard-d">Screen → YELLOW</div><div class="abar"></div></div>
       </div>
     </div>
   </div>
-
   <div class="bnav">
     <button class="bni on" onclick="navTo('home')"><div class="bnic">🗺️</div>Navigate</button>
     <button class="bni" onclick="navTo('police')"><div class="bnic">🚔</div>Police</button>
@@ -383,7 +421,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
       <div class="proitem"><div class="proitem-ic">📧</div><div class="proitem-tx"><div class="proitem-lb" id="pp-em">sandra@email.com</div><div class="proitem-sb">Email</div></div><div class="proitem-ar">›</div></div>
     </div>
     <div class="procard">
-      <div class="proitem" onclick="toast('🔔 Auto detection active')"><div class="proitem-ic">🔔</div><div class="proitem-tx"><div class="proitem-lb">Alert Settings</div><div class="proitem-sb">Auto sound detection enabled</div></div><div class="proitem-ar">›</div></div>
+      <div class="proitem" onclick="toggleTheme()"><div class="proitem-ic">🌓</div><div class="proitem-tx"><div class="proitem-lb">Light / Dark Mode</div><div class="proitem-sb">Tap to switch appearance</div></div><div class="proitem-ar">›</div></div>
+      <div class="proitem" onclick="toast('🔔 Alert sensitivity adjustable on home screen')"><div class="proitem-ic">🔔</div><div class="proitem-tx"><div class="proitem-lb">Alert Settings</div><div class="proitem-sb">Adjust sensitivity on home screen</div></div><div class="proitem-ar">›</div></div>
       <div class="proitem" onclick="toast('🌍 Kinyarwanda / English')"><div class="proitem-ic">🌍</div><div class="proitem-tx"><div class="proitem-lb">Language</div><div class="proitem-sb">Kinyarwanda / English</div></div><div class="proitem-ar">›</div></div>
       <div class="proitem" onclick="openMod('signMod')"><div class="proitem-ic">🤟</div><div class="proitem-tx"><div class="proitem-lb">My Deaf Driver Card</div><div class="proitem-sb">Show to police &amp; emergency</div></div><div class="proitem-ar">›</div></div>
       <div class="proitem" onclick="toast('📄 License: Valid ✅')"><div class="proitem-ic">📄</div><div class="proitem-tx"><div class="proitem-lb">Driving License</div><div class="proitem-sb">Upload &amp; store your license</div></div><div class="proitem-ar">›</div></div>
@@ -398,57 +437,48 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 </div>
 
 </div>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-// ═══ APP STATE ═══════════════════════════════════════
+// Load Leaflet with a fallback CDN — if the first source is slow/blocked
+// (e.g. unreliable mobile network), try a second one automatically instead
+// of leaving the map stuck on "not ready" forever.
+(function loadLeaflet(sources, i){
+  if(i>=sources.length){
+    window.__leafletFailed = true;
+    return;
+  }
+  var s=document.createElement('script');
+  s.src=sources[i];
+  s.onload=function(){ window.__leafletLoaded = true; };
+  s.onerror=function(){ loadLeaflet(sources, i+1); };
+  document.head.appendChild(s);
+})([
+  'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js',
+  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
+  'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js'
+], 0);
+</script>
+<script>
+// ═══ STATE ══════════════════════════════
 var CU=null, users={};
 try{users=JSON.parse(localStorage.getItem('dd_u')||'{}');}catch(e){}
 var map=null, uMark=null, dMark=null, rLayer=null, mapReady=false;
+var fromEdited=false; // becomes true the moment the user types their own pickup address
 var micOn=false, actx=null, anlz=null, mSrc=null, mStream=null, gainNode=null;
+var GAIN_BOOST=6; // amplifies the raw mic signal so quiet hardware still triggers reliably
 var alertOn=false, aTimer=null;
 var KIGALI=[-1.9441,30.0619];
 
-// ═══ DETECTION VARIABLES ════════════════════════════
-// Peak tracker — we watch the PEAK volume each frame,
-// not the average. Peaks catch sudden sounds better.
-var peakHistory = [];    // last N peak values
-var HIST = 30;           // rolling window (0.5s at 60fps)
-var holdFrames = 0;      // consecutive frames above threshold
-var HOLD_NEED = 8;       // need 8 frames ~133ms sustained sound
-var COOLDOWN = 5000;     // ms between alerts
-var lastFire = 0;
-var alertRotate = ['siren','horn','emg','go'];
-var alertIdx = 0;
-
-// These thresholds are on a 0-255 FREQUENCY DOMAIN scale
-// (not time domain — frequency domain gives bigger numbers)
-// Background hum on a laptop = roughly 5-15
-// Phone speaker 20cm away = roughly 40-120
-// Loud clap = roughly 80-180
-var TRIGGER = 30;   // frequency domain peak to trigger detection
-
-var ALERTS={
-  siren:{bg:'#E74C3C',ic:'🚨',t:'POLICE SIREN DETECTED',
-    d:'A police siren is nearby!\nPull over safely if an officer\nsignals you. Stay calm.',s:'🔴 RED ALERT · Auto-detected by mic'},
-  horn:{bg:'#F39C12',ic:'📣',t:'VEHICLE HORN DETECTED',
-    d:'A vehicle horn is nearby!\nCheck your mirrors and\nsurroundings carefully.',s:'🟡 YELLOW ALERT · Auto-detected by mic'},
-  emg:{bg:'#2980B9',ic:'🚑',t:'EMERGENCY VEHICLE NEARBY',
-    d:'Ambulance or fire truck approaching!\nMove to the left side of\nthe road to give way.',s:'🔵 BLUE ALERT · Auto-detected by mic'},
-  go:{bg:'#27AE60',ic:'🚦',t:'TRAFFIC SIGNAL DETECTED',
-    d:'Traffic signal detected ahead.\nPay attention to signals.\nProceed only when safe.',s:'🟢 GREEN ALERT · Auto-detected by mic'}
-};
-
-// ═══ HELPERS ═════════════════════════════════════════
+// ═══ HELPERS ════════════════════════════
 function g(id){return document.getElementById(id);}
 function sv(id,v){var e=g(id);if(e)e.textContent=v;}
 var tT=null;
 function toast(msg){
   var t=g('toast');t.textContent=msg;t.classList.add('on');
-  clearTimeout(tT);tT=setTimeout(function(){t.classList.remove('on');},3200);
+  clearTimeout(tT);tT=setTimeout(function(){t.classList.remove('on');},3000);
 }
 function save(k,v){try{localStorage.setItem(k,v);}catch(e){}}
 
-// ═══ SCREENS ═════════════════════════════════════════
+// ═══ SCREENS ════════════════════════════
 function go(id){
   document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
   g(id).classList.add('active');
@@ -456,7 +486,7 @@ function go(id){
 }
 function navTo(p){go({home:'s-home',police:'s-police',profile:'s-profile'}[p]||'s-home');}
 
-// ═══ AUTH ════════════════════════════════════════════
+// ═══ AUTH ═══════════════════════════════
 function swTab(t){
   g('t-in').classList.toggle('on',t==='in');g('t-up').classList.toggle('on',t==='up');
   g('f-in').style.display=t==='in'?'block':'none';
@@ -483,26 +513,44 @@ function doIn(){
 }
 function login(u){
   CU=u;save('dd_c',JSON.stringify(u));updateUI(u);
-  toast('👋 Welcome, '+u.fn+'!');setTimeout(function(){go('s-home');},700);
+  toast('👋 Welcome, '+u.fn+'!');
+  setTimeout(function(){go('s-home');},700);
 }
 function doOut(){
-  stopMic();CU=null;try{localStorage.removeItem('dd_c');}catch(e){}
-  toast('👋 Signed out');setTimeout(function(){go('s-auth');},600);
+  stopMic();CU=null;
+  try{localStorage.removeItem('dd_c');}catch(e){}
+  toast('👋 Signed out');
+  setTimeout(function(){go('s-auth');},600);
 }
 function updateUI(u){
   var i=(u.fn||'U')[0].toUpperCase();
-  sv('hav',i);sv('hname',u.fn+' 👋');sv('prav',i);
-  sv('prname',(u.fn||'')+' '+(u.ln||''));sv('premail',u.em||'');
-  sv('pp-n',(u.fn||'')+' '+(u.ln||''));sv('pp-ph',u.ph||'');
-  sv('pp-pl',u.pl||'');sv('pp-em',u.em||'');
+  sv('hav',i);sv('hname',u.fn+' 👋');
+  sv('prav',i);sv('prname',(u.fn||'')+' '+(u.ln||''));
+  sv('premail',u.em||'');sv('pp-n',(u.fn||'')+' '+(u.ln||''));
+  sv('pp-ph',u.ph||'');sv('pp-pl',u.pl||'');sv('pp-em',u.em||'');
   sv('modPhone',u.ph||'+250 780 000 000');
 }
 
-// ═══ MAP ═════════════════════════════════════════════
+// ═══ MAP ════════════════════════════════
+var mapInitAttempts=0;
 function initMap(){
   if(mapReady){if(map)setTimeout(function(){map.invalidateSize();},100);return;}
-  if(typeof L==='undefined'){setTimeout(initMap,400);return;}
-  var c=g('map');if(!c||c.clientHeight===0){setTimeout(initMap,200);return;}
+  if(window.__leafletFailed){
+    sv('mbadge','⚠️ Map failed to load — tap to retry');
+    return;
+  }
+  if(typeof L==='undefined'){
+    mapInitAttempts++;
+    if(mapInitAttempts===1)sv('mbadge','⏳ Loading map...');
+    if(mapInitAttempts>25){ // ~10s of retrying at 400ms
+      sv('mbadge','⚠️ Map is taking too long — tap to retry');
+      return;
+    }
+    setTimeout(initMap,400);
+    return;
+  }
+  var c=g('map');
+  if(!c||c.clientHeight===0){setTimeout(initMap,200);return;}
   mapReady=true;
   try{
     map=L.map('map',{zoomControl:false,attributionControl:false}).setView(KIGALI,14);
@@ -514,24 +562,120 @@ function initMap(){
       if(navigator.geolocation){
         navigator.geolocation.getCurrentPosition(function(pos){
           var ll=[pos.coords.latitude,pos.coords.longitude];
-          uMark.setLatLng(ll);map.setView(ll,15);sv('mbadge','📍 Your GPS location');
+          uMark.setLatLng(ll);map.setView(ll,15);
+          sv('mbadge','📍 Your GPS location — Kigali');
+          fillPickupFromGPS(ll[0],ll[1]);
         },function(){sv('mbadge','📍 Kigali City — OpenStreetMap');},{timeout:8000});
       }
     },300);
     sv('mbadge','📍 Kigali City — OpenStreetMap');
   }catch(err){mapReady=false;toast('⚠️ Map error. Check internet.');}
 }
+// ═══ GEOCODING (with timeout + fallback provider) ══════
+// A slow/blocked request to one geocoder used to just hang or silently fail,
+// which made free-text search look broken. This tries Nominatim first with a
+// hard timeout, then falls back to Photon (a different free provider) before
+// giving up — same resilience idea as the map-tile CDN fallback.
+function fetchWithTimeout(url,ms){
+  var ctrl=new AbortController();
+  var t=setTimeout(function(){ctrl.abort();},ms);
+  return fetch(url,{signal:ctrl.signal}).finally(function(){clearTimeout(t);});
+}
+function geocodeForward(query){
+  var q=encodeURIComponent(query);
+  return fetchWithTimeout('https://nominatim.openstreetmap.org/search?q='+q+'&format=json&limit=1',6000)
+    .then(function(r){return r.json();})
+    .then(function(d){
+      if(d&&d.length)return {lat:parseFloat(d[0].lat),lng:parseFloat(d[0].lon)};
+      throw new Error('no result');
+    })
+    .catch(function(){
+      return fetchWithTimeout('https://photon.komoot.io/api/?q='+q+'&limit=1',6000)
+        .then(function(r){return r.json();})
+        .then(function(d){
+          if(d&&d.features&&d.features.length){
+            var c=d.features[0].geometry.coordinates; // [lon,lat]
+            return {lat:c[1],lng:c[0]};
+          }
+          throw new Error('no result');
+        });
+    });
+}
+function geocodeReverse(lat,lng){
+  return fetchWithTimeout('https://nominatim.openstreetmap.org/reverse?lat='+lat+'&lon='+lng+'&format=json&zoom=16',6000)
+    .then(function(r){return r.json();})
+    .then(function(d){
+      var a=d&&d.address;
+      var label=a&&(a.suburb||a.neighbourhood||a.quarter||a.road||a.city_district||a.town||a.village);
+      if(label&&a.city)label+=', '+a.city;
+      else if(label)label+=', Kigali';
+      if(!label)label=(d&&d.display_name)?d.display_name.split(',').slice(0,2).join(','):null;
+      if(!label)throw new Error('no label');
+      return label;
+    })
+    .catch(function(){
+      return fetchWithTimeout('https://photon.komoot.io/reverse?lat='+lat+'&lon='+lng,6000)
+        .then(function(r){return r.json();})
+        .then(function(d){
+          var p=d&&d.features&&d.features[0]&&d.features[0].properties;
+          if(p)return (p.name||p.street||p.district||'Current location')+', '+(p.city||'Kigali');
+          throw new Error('no label');
+        });
+    });
+}
+
+// Fills the "From" box with the user's REAL detected location (reverse geocoded),
+// instead of the old hardcoded "Nyarugenge, Kigali" that showed regardless of
+// where you actually were. It never overwrites text you've typed yourself.
+function fillPickupFromGPS(lat,lng){
+  if(fromEdited)return;
+  geocodeReverse(lat,lng)
+    .then(function(label){ if(!fromEdited)g('rfrom').value=label; })
+    .catch(function(){ if(!fromEdited&&!g('rfrom').value)g('rfrom').value='Current location (Kigali)'; });
+}
+function mapZoom(dir){
+  if(!map)return;
+  if(dir>0)map.zoomIn(); else map.zoomOut();
+}
+function retryMap(){
+  if(mapReady)return;
+  if(window.__leafletFailed||typeof L==='undefined'){
+    toast('🔄 Retrying map load...');
+    sv('mbadge','⏳ Loading map...');
+    window.__leafletFailed=false;
+    mapInitAttempts=0;
+    var s=document.createElement('script');
+    s.src='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js?retry='+Date.now();
+    s.onload=function(){ window.__leafletLoaded=true; initMap(); };
+    s.onerror=function(){ window.__leafletFailed=true; sv('mbadge','⚠️ No internet — tap to retry'); };
+    document.head.appendChild(s);
+  }
+}
 function recenter(){
   if(!map){toast('⚠️ Map not ready');return;}
   if(navigator.geolocation){
     navigator.geolocation.getCurrentPosition(function(pos){
       var ll=[pos.coords.latitude,pos.coords.longitude];
-      if(uMark)uMark.setLatLng(ll);map.setView(ll,16);toast('📍 Centered on your location');
+      if(uMark)uMark.setLatLng(ll);map.setView(ll,16);
+      toast('📍 Centered on your location');
+      fillPickupFromGPS(ll[0],ll[1]);
     },function(){map.setView(KIGALI,14);});
   }
 }
 
-// ═══ PLACES & ROUTING ════════════════════════════════
+// ═══ THEME (light / dark mode) ══════════
+function applyTheme(mode){
+  var app=document.querySelector('.app');
+  app.classList.toggle('dark',mode==='dark');
+  g('themeBtn').textContent=mode==='dark'?'☀️':'🌙';
+  save('dd_theme',mode);
+}
+function toggleTheme(){
+  var isDark=document.querySelector('.app').classList.contains('dark');
+  applyTheme(isDark?'light':'dark');
+}
+
+// ═══ DESTINATIONS ═══════════════════════
 var PLACES=[
   {n:'Kimironko Market',c:[-1.9355,30.1006],i:'🏪'},
   {n:'Kigali International Airport',c:[-1.9686,30.1395],i:'✈️'},
@@ -547,57 +691,114 @@ var PLACES=[
   {n:'Biryogo Market',c:[-1.9530,30.0480],i:'🛒'}
 ];
 function showSug(){
-  var val=g('rto').value.toLowerCase(),list=g('suglist');
-  var f=val.length===0?PLACES:PLACES.filter(function(p){return p.n.toLowerCase().indexOf(val)>-1;});
-  if(!f.length){list.style.display='none';return;}
-  list.innerHTML=f.map(function(p){return '<div class="suggitem" onclick="pickDest(\''+p.n.replace(/'/g,"\\'")+"',"+p.c[0]+','+p.c[1]+'">'+p.i+' '+p.n+'</div>';}).join('');
+  var val=g('rto').value.trim(),list=g('suglist');
+  var valLc=val.toLowerCase();
+  var f=valLc.length===0?PLACES:PLACES.filter(function(p){return p.n.toLowerCase().indexOf(valLc)>-1;});
+  var html='';
+  html += f.map(function(p){return '<div class="suggitem" data-n="'+p.n.replace(/"/g,'&quot;')+'" data-lat="'+p.c[0]+'" data-lng="'+p.c[1]+'">'+p.i+' '+p.n+'</div>';}).join('');
+  // Always offer a way to search whatever was actually typed — the list above
+  // is just quick shortcuts for common Kigali spots, not the only option.
+  if(val.length>1){
+    var exact=PLACES.some(function(p){return p.n.toLowerCase()===valLc;});
+    if(!exact){
+      html += '<div class="suggitem suggsearch" data-search="1">🔍 Search for "'+val.replace(/"/g,'&quot;')+'"</div>';
+    }
+  }
+  if(!html){list.style.display='none';return;}
+  list.innerHTML=html;
   list.style.display='block';
+  setTimeout(function(){try{list.scrollIntoView({block:'nearest',behavior:'smooth'});}catch(e){}},60);
 }
 function pickDest(name,lat,lng){
   g('rto').value=name;g('suglist').style.display='none';
-  if(!map)return;if(dMark)map.removeLayer(dMark);
+  if(!map)return;
+  if(dMark)map.removeLayer(dMark);
   var di=L.divIcon({html:'<div style="font-size:26px;line-height:1;">🏁</div>',iconSize:[26,32],iconAnchor:[13,32],className:''});
   dMark=L.marker([lat,lng],{icon:di}).addTo(map).bindPopup('<b>🏁 '+name+'</b>').openPopup();
 }
+// IMPORTANT: selecting a suggestion uses mousedown (fires BEFORE the input's blur)
+// with preventDefault, instead of click. On mobile, tapping a suggestion was
+// blurring/closing the input first, which could dismiss the list before the
+// click registered — that's why choosing an option often didn't work.
+(function(){
+  var evt = window.PointerEvent ? 'pointerdown' : 'mousedown'; // one unified handler avoids double-firing on touch
+  g('suglist').addEventListener(evt,function(e){
+    var item=e.target.closest('.suggitem');
+    if(!item)return;
+    e.preventDefault(); // keep the input/list stable through the tap so the selection isn't swallowed
+    if(item.hasAttribute('data-search')){
+      g('suglist').style.display='none';
+      findRoute();
+      return;
+    }
+    pickDest(item.getAttribute('data-n'), parseFloat(item.getAttribute('data-lat')), parseFloat(item.getAttribute('data-lng')));
+  });
+})();
 document.addEventListener('click',function(e){if(!e.target.closest('.rinpwrap'))g('suglist').style.display='none';});
+
+// ═══ ROUTING ════════════════════════════
 function findRoute(){
-  if(!map||!mapReady){toast('⚠️ Map not ready');return;}
-  var toVal=g('rto').value.trim();if(!toVal){toast('⚠️ Enter your destination');return;}
-  var uLL=uMark?uMark.getLatLng():{lat:KIGALI[0],lng:KIGALI[1]};
-  var dc=null,found=null;
-  for(var i=0;i<PLACES.length;i++){if(PLACES[i].n===toVal){found=PLACES[i];break;}}
-  if(found){dc=found.c;drawRoute(uLL,dc,toVal);}
-  else{
-    toast('🔍 Finding location...');
-    fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(toVal+', Kigali, Rwanda')+'&format=json&limit=1')
-    .then(function(r){return r.json();})
-    .then(function(d){if(d&&d.length){dc=[parseFloat(d[0].lat),parseFloat(d[0].lon)];drawRoute(uLL,dc,toVal);}else toast('⚠️ Location not found.');})
-    .catch(function(){toast('⚠️ Search failed.');});
+  if(!map||!mapReady){
+    toast('⚠️ Map still loading — tap the badge above the map to retry');
+    if(!mapReady)retryMap();
+    return;
   }
+  var toVal=g('rto').value.trim();
+  if(!toVal){toast('⚠️ Enter your destination first');return;}
+
+  function withOrigin(cb){
+    // If the user typed their own pickup address, use THAT as the route start.
+    // Otherwise fall back to the live GPS marker, as before.
+    if(fromEdited&&g('rfrom').value.trim()){
+      geocodeForward(g('rfrom').value.trim()+', Kigali, Rwanda')
+        .then(cb)
+        .catch(function(){
+          toast('⚠️ Pickup address not found — using GPS location instead.');
+          cb(uMark?uMark.getLatLng():{lat:KIGALI[0],lng:KIGALI[1]});
+        });
+    }else{
+      cb(uMark?uMark.getLatLng():{lat:KIGALI[0],lng:KIGALI[1]});
+    }
+  }
+
+  withOrigin(function(uLL){
+    var found=null;
+    for(var i=0;i<PLACES.length;i++){if(PLACES[i].n===toVal){found=PLACES[i];break;}}
+    if(found){drawRoute(uLL,found.c,toVal);return;}
+    // Not one of the quick-shortcut places — search it as free text (this is
+    // what makes ANY address work, not just the 12 presets in the dropdown).
+    toast('🔍 Finding "'+toVal+'"...');
+    geocodeForward(toVal+', Kigali, Rwanda')
+      .then(function(loc){drawRoute(uLL,[loc.lat,loc.lng],toVal);})
+      .catch(function(){toast('⚠️ Could not find that address. Try adding more detail (e.g. street or landmark).');});
+  });
 }
 function drawRoute(uLL,dc,name){
   if(dMark)map.removeLayer(dMark);
   var di=L.divIcon({html:'<div style="font-size:26px;line-height:1;">🏁</div>',iconSize:[26,32],iconAnchor:[13,32],className:''});
   dMark=L.marker(dc,{icon:di}).addTo(map).bindPopup('<b>🏁 '+name+'</b>').openPopup();
-  sv('mbadge','⏳ Calculating route...');if(rLayer){map.removeLayer(rLayer);rLayer=null;}
+  sv('mbadge','⏳ Calculating road route...');
+  if(rLayer){map.removeLayer(rLayer);rLayer=null;}
   fetch('https://router.project-osrm.org/route/v1/driving/'+uLL.lng+','+uLL.lat+';'+dc[1]+','+dc[0]+'?overview=full&geometries=geojson')
   .then(function(r){return r.json();})
   .then(function(data){
     if(data.code==='Ok'&&data.routes&&data.routes.length){
-      var route=data.routes[0],km=(route.distance/1000).toFixed(1),mins=Math.round(route.duration/60);
+      var route=data.routes[0];
+      var km=(route.distance/1000).toFixed(1),mins=Math.round(route.duration/60);
       rLayer=L.geoJSON(route.geometry,{style:{color:'#27AE60',weight:7,opacity:.92,lineCap:'round',lineJoin:'round'}}).addTo(map);
       map.fitBounds(rLayer.getBounds().pad(0.2));
       g('rdist').textContent=km+' km';g('rtime').textContent=mins+' min';
       g('rinfo').style.display='block';
       sv('mbadge','🗺️ '+name+' · '+km+' km · '+mins+' min');
       toast('✅ Route found! '+km+' km · '+mins+' min');
-    }else throw new Error();
+    }else throw new Error('no route');
   }).catch(function(){
     rLayer=L.polyline([[uLL.lat,uLL.lng],dc],{color:'#E74C3C',weight:5,dashArray:'10,6',opacity:.7}).addTo(map);
     map.fitBounds([[uLL.lat,uLL.lng],dc],{padding:[40,40]});
     var d=map.distance([uLL.lat,uLL.lng],dc);
     g('rdist').textContent=(d/1000).toFixed(1)+' km';g('rtime').textContent=Math.round(d/333)+' min';
-    g('rinfo').style.display='block';sv('mbadge','⚠️ Estimate to '+name);
+    g('rinfo').style.display='block';
+    sv('mbadge','⚠️ Estimate to '+name);
     toast('⚠️ Road route unavailable. Showing estimate.');
   });
 }
@@ -606,30 +807,112 @@ function rtab(n){
   g('rc1').classList.toggle('on',n===1);g('rc2').classList.toggle('on',n===2);
 }
 
-// ═══════════════════════════════════════════════════════
-//  MICROPHONE DETECTION — FINAL VERSION
+// ════════════════════════════════════════════════════════
+// MICROPHONE SOUND DETECTION — v2
 //
-//  KEY INSIGHT: We use FREQUENCY DOMAIN (getByteFrequencyData)
-//  NOT time domain. Frequency data values reach 200-255 for
-//  loud sounds even from a phone speaker nearby.
-//  Time domain values barely move (0-10 range) for the same sound.
+// FIX 1 — VOLUME THRESHOLD NO LONGER FIXED:
+//   The old code compared volume to one constant number for
+//   every phone/laptop. Mic hardware gain varies a lot, so
+//   that constant was too high on some devices (nothing ever
+//   triggered) and too low on others. This version calibrates
+//   to the room automatically: it samples ~1.2s of ambient
+//   noise when you enable the mic, uses that as the "noise
+//   floor", and triggers only when the volume rises clearly
+//   above THAT floor. It also keeps adapting slowly while
+//   quiet, so it won't drift out of sync if you move rooms.
 //
-//  We also apply a SOFTWARE GAIN of 4x so even quiet laptop
-//  microphones pick up phone speaker sounds reliably.
-//
-//  TRIGGER LOGIC:
-//  1. Get frequency data (256 bins, values 0-255)
-//  2. Find the PEAK bin value (loudest frequency)
-//  3. Also calculate average of top 10 bins
-//  4. If peak OR top-10-avg exceeds TRIGGER for HOLD_NEED frames
-//     → fire the alert
-//  5. Alert type rotates: siren → horn → ambulance → traffic
-// ═══════════════════════════════════════════════════════
+// FIX 2 — CLASSIFICATION NO LONGER "SIREN-BIASED":
+//   The old code compared a single frame's frequency bands,
+//   and its rule order made "siren" win almost any time mid
+//   frequencies were present — which is true of most everyday
+//   sounds played through a phone speaker. This version looks
+//   at the whole confirmed sound window (not one frame) and
+//   uses TWO features together:
+//     - spectral centroid  (roughly: how high/low pitched)
+//     - centroid modulation (how much the pitch is sweeping)
+//   A real siren wails — its pitch visibly rises and falls a
+//   few times per second. A horn is a flat, steady tone. An
+//   ambulance/emergency yelp is higher-pitched and steadier
+//   than a wailing siren. That difference in *behavior over
+//   time* is a much stronger signal than one frame's spectrum.
+// ════════════════════════════════════════════════════════
+
+var sensitivityLevel = 5;      // 1-10 slider value
+var COOLDOWN_MS = 4000;        // min gap between auto-alerts
+var lastAlertTime = 0;
+
+var CONFIRM_FRAMES = 5;        // consecutive loud frames needed to confirm a real event (was 7 — faster response)
+var loudFrameCount = 0;
+
+// Adaptive ambient noise floor (auto-calibrates per device/room)
+var noiseFloor = 6;
+var floorLocked = false;
+var calibSamples = [];
+var CALIB_FRAMES = 35;         // ~0.5-0.7s at typical rAF rate, collected right after enabling mic
+
+// Margin ABOVE the noise floor required to count as "loud" — controlled by sensitivity slider
+var MARGIN_MAX = 40, MARGIN_MIN = 7;
+function currentMargin(){
+  // sensitivity 10 => small margin (triggers easily) · sensitivity 1 => large margin (harder to trigger)
+  return MARGIN_MAX - ((sensitivityLevel-1)/9)*(MARGIN_MAX-MARGIN_MIN);
+}
+function updateSens(v){
+  sensitivityLevel = parseInt(v);
+  g('sensVal').textContent = v;
+}
+function boostMic(){
+  if(!micOn||!gainNode){toast('⚠️ Enable the mic first');return;}
+  GAIN_BOOST=Math.min(GAIN_BOOST+3,24);
+  gainNode.gain.value=GAIN_BOOST;
+  toast('🔊 Mic boosted (x'+GAIN_BOOST+'). If it stays quiet, tap again.');
+}
+
+// Buffers collected WHILE a sound is building up to confirmation, used for classification
+var centroidBuf = [], lowBuf = [], midBuf = [], highBuf = [];
+
+// ═══ ALERT DEFINITIONS ══════════════════
+var ALERTS = {
+  siren: {
+    bg:'#E74C3C',
+    ic:'🚨',
+    t:'POLICE SIREN DETECTED',
+    d:'A police siren is nearby!\nPull over safely if an officer signals you.\nStay calm and check your mirrors.',
+    s:'🔴 RED ALERT'
+  },
+  horn: {
+    bg:'#F39C12',
+    ic:'📣',
+    t:'VEHICLE HORN DETECTED',
+    d:'A vehicle horn is nearby!\nCheck your mirrors and surroundings.\nMaintain your lane safely.',
+    s:'🟡 YELLOW ALERT'
+  },
+  emg: {
+    bg:'#2980B9',
+    ic:'🚑',
+    t:'EMERGENCY VEHICLE NEARBY',
+    d:'Ambulance or fire truck approaching!\nMove to the left side of the road\nto give way immediately.',
+    s:'🔵 BLUE ALERT'
+  },
+  go: {
+    bg:'#27AE60',
+    ic:'🚦',
+    t:'TRAFFIC SIGNAL DETECTED',
+    d:'Traffic signal detected ahead.\nPay attention to road signals.\nProceed only when safe.',
+    s:'🟢 GREEN ALERT'
+  },
+  loud: {
+    bg:'#8E44AD',
+    ic:'🔊',
+    t:'LOUD SOUND DETECTED',
+    d:'A loud sound was detected nearby!\nStay alert and check your\nsurroundings carefully.',
+    s:'🟣 LOUD NOISE ALERT'
+  }
+};
 
 function toggleMic(){
   if(micOn){stopMic();return;}
   if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
-    alert('Microphone not supported.\nOpen this file directly in Google Chrome browser.');
+    alert('This browser does not support microphone access.\nPlease open this file directly in Google Chrome browser.');
     return;
   }
   navigator.mediaDevices.getUserMedia({
@@ -642,59 +925,61 @@ function toggleMic(){
   })
   .then(function(stream){
     mStream=stream;
-    // Create AudioContext
     actx=new(window.AudioContext||window.webkitAudioContext)();
     if(actx.state==='suspended')actx.resume();
-
-    // SOURCE: the microphone
-    mSrc=actx.createMediaStreamSource(mStream);
-
-    // GAIN NODE: amplify 4x so quiet laptop mics still work
-    gainNode=actx.createGain();
-    gainNode.gain.value=4.0;
-
-    // ANALYSER: reads frequency data
     anlz=actx.createAnalyser();
-    anlz.fftSize=256;           // 128 frequency bins
+    anlz.fftSize=4096;
     anlz.smoothingTimeConstant=0.5;
-
-    // Chain: mic → gain → analyser
+    anlz.minDecibels=-90;
+    anlz.maxDecibels=-10;
+    mSrc=actx.createMediaStreamSource(mStream);
+    // With autoGainControl off, many phone mics deliver a very quiet raw
+    // signal — quiet enough that even loud external sounds barely nudge the
+    // volume reading, so alerts basically never fired. Boost it ourselves so
+    // detection is reliable across different devices.
+    gainNode=actx.createGain();
+    gainNode.gain.value=GAIN_BOOST;
     mSrc.connect(gainNode);
     gainNode.connect(anlz);
-
     micOn=true;
-    peakHistory=[];
-    holdFrames=0;
-    lastFire=0;
-    alertIdx=0;
-
+    loudFrameCount=0;
+    centroidBuf=[];lowBuf=[];midBuf=[];highBuf=[];
+    lastAlertTime=0;
+    // reset + start calibration
+    floorLocked=false;calibSamples=[];noiseFloor=6;GAIN_BOOST=6;
     g('mdot').className='micdot on';
     g('mtgl').textContent='Stop Mic';
-    g('mtgl').className='mictgl stop';
-    sv('mlbl','🎤 Listening — play sound near device');
-    sv('levval','READY');
-    toast('🎤 Mic ON! Play siren/horn near this device now');
-    loop();
+    g('sensbar').style.display='flex';
+    g('demobar').style.display='block';
+    sv('mlbl','🎚️ Calibrating to your surroundings...');
+    toast('🎤 Mic ON! Calibrating for ~1 second, then listening...');
+    detectLoop();
   })
   .catch(function(err){
-    console.error(err.name,err.message);
-    var msg='MICROPHONE BLOCKED\n\n';
+    console.error(err.name, err.message);
+    var msg='';
     if(err.name==='NotAllowedError'||err.name==='PermissionDeniedError'){
-      msg+='HOW TO FIX:\n\n'+
-        '📱 Chrome Android:\n'+
-        '  Tap 🔒 in address bar → Microphone → Allow → Reload\n\n'+
-        '📱 Safari iPhone:\n'+
-        '  Settings → Safari → Microphone → Allow → Reload\n\n'+
-        '💻 Chrome PC/Mac:\n'+
-        '  Click 🔒 in address bar → Microphone → Allow → Reload\n\n'+
-        '⚠️ File must be open DIRECTLY in Chrome (not iframe).';
+      msg='MICROPHONE BLOCKED\n\nHow to fix:\n\n'+
+          '📱 Chrome on Android:\n'+
+          '  1. Tap the 🔒 lock icon in address bar\n'+
+          '  2. Tap "Microphone" → Allow\n'+
+          '  3. Reload the page\n\n'+
+          '📱 Safari on iPhone:\n'+
+          '  1. Settings → Safari → Microphone\n'+
+          '  2. Set to Allow\n'+
+          '  3. Reload the page\n\n'+
+          '💻 Chrome on PC/Mac:\n'+
+          '  1. Click 🔒 icon in address bar\n'+
+          '  2. Microphone → Allow\n'+
+          '  3. Reload the page\n\n'+
+          'The file must be opened DIRECTLY in Chrome.';
     }else if(err.name==='NotFoundError'){
-      msg+='No microphone found on this device.';
+      msg='No microphone found on this device.';
     }else{
-      msg+='Error: '+err.name+' — '+err.message;
+      msg='Mic error: '+err.message+'\n\nUse Google Chrome browser.';
     }
     alert(msg);
-    toast('⚠️ Mic blocked — see popup');
+    toast('⚠️ Mic blocked. See instructions.');
   });
 }
 
@@ -703,96 +988,192 @@ function stopMic(){
   if(mStream)mStream.getTracks().forEach(function(t){t.stop();});
   try{if(actx&&actx.state!=='closed')actx.close();}catch(e){}
   mStream=null;actx=null;anlz=null;mSrc=null;gainNode=null;
-  peakHistory=[];holdFrames=0;
+  loudFrameCount=0;centroidBuf=[];lowBuf=[];midBuf=[];highBuf=[];
+  floorLocked=false;calibSamples=[];
   g('mdot').className='micdot';
   g('mtgl').textContent='Enable Mic';
-  g('mtgl').className='mictgl';
-  g('volfill').style.width='0%';
+  g('sensbar').style.display='none';
+  g('demobar').style.display='none';
+  g('mfill').style.width='0%';
   sv('mlbl','Tap Enable to start listening');
-  sv('levtxt','Sound level: 0%');
-  sv('levval','');
 }
 
-function loop(){
+function detectLoop(){
   if(!micOn||!anlz)return;
 
-  // Get FREQUENCY data — 128 bins, values 0-255
-  var freq=new Uint8Array(anlz.frequencyBinCount);
-  anlz.getByteFrequencyData(freq);
+  var bufLen=anlz.frequencyBinCount;
+  var timeData=new Uint8Array(bufLen);
+  var freqData=new Uint8Array(bufLen);
+  anlz.getByteTimeDomainData(timeData);
+  anlz.getByteFrequencyData(freqData);
 
-  // Find PEAK value (loudest single frequency bin)
-  var peak=0;
-  for(var i=0;i<freq.length;i++){
-    if(freq[i]>peak)peak=freq[i];
+  // ── VOLUME (true RMS on time-domain signal) ──
+  var sumSq=0;
+  for(var i=0;i<bufLen;i++){
+    var dev=timeData[i]-128;
+    sumSq+=dev*dev;
+  }
+  var rms=Math.min(128,Math.sqrt(sumSq/bufLen));
+
+  // ── CALIBRATION PHASE ──
+  // Collect the first ~CALIB_FRAMES samples as "this is what quiet sounds like
+  // on THIS device, in THIS room" instead of assuming a fixed number.
+  if(!floorLocked){
+    calibSamples.push(rms);
+    sv('mlbl','🎚️ Calibrating... '+calibSamples.length+'/'+CALIB_FRAMES);
+    if(calibSamples.length>=CALIB_FRAMES){
+      calibSamples.sort(function(a,b){return a-b;});
+      // median is more robust than mean against one loud blip during calibration
+      noiseFloor=calibSamples[Math.floor(calibSamples.length/2)];
+      if(noiseFloor<3)noiseFloor=3; // sane floor even in a silent room
+      floorLocked=true;
+      sv('mlbl','🎤 Listening... (calibrated)');
+      toast('✅ Calibrated! Now listening for sounds.');
+    }
+    requestAnimationFrame(detectLoop);
+    return;
   }
 
-  // Sort and get average of top 10 bins
-  var sorted=Array.from(freq).sort(function(a,b){return b-a;});
-  var top10=0;
-  for(var j=0;j<10;j++)top10+=sorted[j];
-  top10=top10/10;
+  var threshold=noiseFloor+currentMargin();
 
-  // Use the higher of peak and top10-avg as our signal
-  var signal=Math.max(peak, top10);
-
-  // Visual: show percentage of trigger level
-  var pct=Math.min(100,Math.round((signal/TRIGGER)*70));
-  var fill=g('volfill');
+  // Display level relative to floor so the bar is meaningful on any device
+  var pct=Math.min(100,Math.max(0,((rms-noiseFloor)/Math.max(1,currentMargin()))*100));
+  var fill=g('mfill');
   fill.style.width=pct+'%';
+  // Live numbers next to the status text — makes it obvious whether the mic
+  // is picking up anything at all, and helps with tuning if a device still
+  // needs a different sensitivity setting.
+  var dbg=' ('+Math.round(rms)+'/'+Math.round(threshold)+')';
 
-  // Color code
-  if(signal>=TRIGGER){
+  if(rms>threshold){
     fill.style.background='#E74C3C';
     g('mdot').className='micdot loud';
-    sv('mlbl','🔊 DETECTING... '+pct+'%');
-    sv('levval','LOUD!');
-  }else if(signal>=TRIGGER*0.5){
+    sv('mlbl','🔊 LOUD! detecting...'+dbg);
+  }else if(rms>noiseFloor+currentMargin()*0.5){
     fill.style.background='#F39C12';
     g('mdot').className='micdot on';
-    sv('mlbl','📢 Sound: '+pct+'%');
-    sv('levval','');
+    sv('mlbl','📢 Sound rising...'+dbg);
   }else{
-    fill.style.background='#2ECC71';
+    fill.style.background='#27AE60';
     g('mdot').className='micdot on';
-    sv('mlbl','🎤 Listening... '+pct+'%');
-    sv('levval','');
+    sv('mlbl','🎤 Listening... road is quiet'+dbg);
+    // slowly adapt the floor to the room while it's genuinely quiet
+    noiseFloor = noiseFloor*0.985 + rms*0.015;
   }
-  sv('levtxt','Signal: '+Math.round(signal)+' / Threshold: '+TRIGGER);
 
-  // HOLD COUNTER — must be sustained, not a brief spike
-  if(signal>=TRIGGER){
-    holdFrames++;
+  // ── FREQUENCY FEATURES FOR THIS FRAME ──
+  var sampleRate=actx?actx.sampleRate:44100;
+  var binHz=sampleRate/anlz.fftSize;
+
+  // spectral centroid (weighted-average frequency, i.e. "how high pitched")
+  // computed over an audible driving-relevant range (~100Hz - 5000Hz)
+  var cLo=Math.floor(100/binHz), cHi=Math.min(bufLen,Math.floor(5000/binHz));
+  var wsum=0, wt=0;
+  for(var k=cLo;k<cHi;k++){
+    var mag=freqData[k];
+    wsum += mag*(k*binHz);
+    wt += mag;
+  }
+  var centroid = wt>0 ? (wsum/wt) : 0;
+
+  // simple band energies (used as a secondary signal, not the primary decision)
+  var low=0,lowN=0, ms2=Math.floor(500/binHz);
+  for(var k=cLo;k<ms2&&k<bufLen;k++){low+=freqData[k];lowN++;}
+  var lowAvg=lowN>0?low/lowN:0;
+
+  var mid=0,midN=0, me2=Math.floor(1800/binHz);
+  for(var k=ms2;k<me2&&k<bufLen;k++){mid+=freqData[k];midN++;}
+  var midAvg=midN>0?mid/midN:0;
+
+  var hi=0,hiN=0;
+  for(var k=me2;k<cHi&&k<bufLen;k++){hi+=freqData[k];hiN++;}
+  var hiAvg=hiN>0?hi/hiN:0;
+
+  // ── CONFIRMATION WINDOW ──
+  if(rms>threshold){
+    loudFrameCount++;
+    centroidBuf.push(centroid);
+    lowBuf.push(lowAvg); midBuf.push(midAvg); highBuf.push(hiAvg);
+    if(centroidBuf.length>30){centroidBuf.shift();lowBuf.shift();midBuf.shift();highBuf.shift();}
   }else{
-    holdFrames=Math.max(0,holdFrames-2); // decay slowly
+    loudFrameCount=Math.max(0,loudFrameCount-2);
+    if(loudFrameCount===0){centroidBuf=[];lowBuf=[];midBuf=[];highBuf=[];}
   }
 
   var now=Date.now();
-  if(holdFrames>=HOLD_NEED&&(now-lastFire)>COOLDOWN){
-    lastFire=now;
-    holdFrames=0;
-    peakHistory=[];
-    // Rotate through alert types
-    var type=alertRotate[alertIdx%alertRotate.length];
-    alertIdx++;
+  if(loudFrameCount>=CONFIRM_FRAMES&&(now-lastAlertTime)>COOLDOWN_MS){
+    lastAlertTime=now;
+    loudFrameCount=0;
+
+    var type=classifySound(centroidBuf,lowBuf,midBuf,highBuf);
+    centroidBuf=[];lowBuf=[];midBuf=[];highBuf=[];
     trigAlert(type,'mic');
   }
 
-  requestAnimationFrame(loop);
+  requestAnimationFrame(detectLoop);
 }
 
-// ═══ ALERT — FULL SCREEN COLOR ═══════════════════════
+// ═══ CLASSIFICATION — looks at the whole confirmed window, not one frame ══
+function classifySound(centroids, lows, mids, highs){
+  if(!centroids.length)return 'loud';
+
+  var n=centroids.length;
+  var avg=function(a){return a.reduce(function(x,y){return x+y;},0)/a.length;};
+  var avgCentroid=avg(centroids);
+  var avgLow=avg(lows), avgMid=avg(mids), avgHigh=avg(highs);
+
+  // How much did the pitch SWEEP during the window? (siren wail signature)
+  var cMin=Math.min.apply(null,centroids), cMax=Math.max.apply(null,centroids);
+  var modulation=cMax-cMin;
+
+  // Count direction changes in the centroid trace (wail goes up-down-up-down repeatedly;
+  // a steady horn tone or random noise won't show this rhythmic back-and-forth)
+  var swings=0;
+  for(var i=2;i<n;i++){
+    var d1=centroids[i-1]-centroids[i-2];
+    var d2=centroids[i]-centroids[i-1];
+    if((d1>15&&d2<-15)||(d1<-15&&d2>15))swings++;
+  }
+
+  var totalEnergy=avgLow+avgMid+avgHigh || 1;
+  var lowRatio=avgLow/totalEnergy, midRatio=avgMid/totalEnergy, highRatio=avgHigh/totalEnergy;
+
+  // 1) SIREN — clear pitch modulation (wailing) with at least one real up/down swing,
+  //    centered in the typical siren wail range (roughly 400-2000 Hz)
+  if(modulation>220 && swings>=1 && avgCentroid>350 && avgCentroid<2400){
+    return 'siren';
+  }
+
+  // 2) HORN — steady (low modulation) tone dominated by low-frequency energy
+  if(modulation<180 && lowRatio>0.45 && avgCentroid<900){
+    return 'horn';
+  }
+
+  // 3) EMERGENCY/AMBULANCE — steadier and higher-pitched than a wailing siren,
+  //    or high-frequency energy clearly dominant
+  if((avgCentroid>=1600 && modulation<260) || highRatio>0.42){
+    return 'emg';
+  }
+
+  // 4) Fallback — loud but doesn't cleanly match a known pattern
+  return 'loud';
+}
+
+// ═══ ALERT SYSTEM ═══════════════════════
 function trigAlert(type,src){
   if(alertOn)return;
   alertOn=true;
-  var a=ALERTS[type]||ALERTS.siren;
+  var a=ALERTS[type]||ALERTS.loud;
   var ov=g('aoverlay');
   ov.style.background=a.bg;
   g('aic').textContent=a.ic;
   g('atitle').textContent=a.t;
   g('adesc').textContent=a.d;
   var srcTxt=a.s;
-  if(src==='tap')srcTxt='👆 Manually triggered — testing';
-  if(src==='sos')srcTxt='🆘 SOS PANIC ALERT';
+  if(src==='mic')srcTxt=a.s+' · Auto-detected by microphone 🎤';
+  if(src==='tap')srcTxt='👆 Manually tapped for testing';
+  if(src==='demo')srcTxt='⚡ Demo button — presentation test';
+  if(src==='sos')srcTxt='🆘 SOS PANIC ALERT SENT';
   g('asrc').textContent=srcTxt;
   ov.classList.add('on');
   if(navigator.vibrate){
@@ -804,20 +1185,34 @@ function trigAlert(type,src){
   if(aTimer)clearTimeout(aTimer);
   aTimer=setTimeout(closeAlert,8000);
 }
+
 function closeAlert(){
   g('aoverlay').classList.remove('on');
-  alertOn=false;holdFrames=0;
+  alertOn=false;
+  loudFrameCount=0;
+  centroidBuf=[];lowBuf=[];midBuf=[];highBuf=[];
   if(aTimer){clearTimeout(aTimer);aTimer=null;}
 }
 
-// ═══ MISC ════════════════════════════════════════════
-function doSOS(){trigAlert('siren','sos');if(navigator.vibrate)navigator.vibrate([600,200,600,200,600]);}
-function callN(n){toast('📞 Calling '+n+'...');setTimeout(function(){window.location.href='tel:'+n;},400);}
+// ═══ MISC ═══════════════════════════════
+function doSOS(){
+  trigAlert('siren','sos');
+  toast('🆘 SOS sent! Police notified with GPS location!');
+  if(navigator.vibrate)navigator.vibrate([600,200,600,200,600]);
+}
+function callN(n){
+  toast('📞 Calling '+n+'...');
+  setTimeout(function(){window.location.href='tel:'+n;},400);
+}
 function openMod(id){g(id).classList.add('on');}
 function closeMod(id){g(id).classList.remove('on');}
 
-// ═══ BOOT ════════════════════════════════════════════
+// ═══ BOOT ═══════════════════════════════
 window.addEventListener('DOMContentLoaded',function(){
+  try{
+    var t=localStorage.getItem('dd_theme');
+    applyTheme(t==='dark'?'dark':'light');
+  }catch(e){}
   try{
     var s=localStorage.getItem('dd_c');
     if(s){var u=JSON.parse(s);CU=u;updateUI(u);setTimeout(function(){go('s-home');},300);}
